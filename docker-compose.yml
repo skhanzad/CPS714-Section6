@@ -1,6 +1,7 @@
 services:
   postgres:
-    image: postgres:16
+    build:
+          dockerfile: Dockerfile.postgres
     container_name: cps714_postgres
     restart: always
     environment:

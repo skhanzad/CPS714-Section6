@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER:-root}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-admin}"
-      POSTGRES_DB: "${POSTGRES_DATABASE:-postgres}"
+      POSTGRES_DB: "${POSTGRES_DATABASE:-campus_connect_db}"
       TZ: "UTC"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"

@@ -69,6 +69,7 @@ web_modules/
 .env
 .env.*
 !.env.example
+.envrc
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -137,3 +138,6 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# DOcker Volumes
+.postgres

@@ -11,7 +11,7 @@ create table rewards_profile (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references users (id),
     earned_credits integer not null default 0,
-    current_credits integer not null default 0,
+    current_credits integer not null default 0
 );
 
 create table credit_transactions (

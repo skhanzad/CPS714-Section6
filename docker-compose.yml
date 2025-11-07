@@ -1,12 +1,13 @@
 services:
   postgres:
-    image: postgres:16
+    build:
+      dockerfile: Dockerfile.postgres
     container_name: cps714_postgres
     restart: always
     environment:
       POSTGRES_USER: "${POSTGRES_USER:-root}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-admin}"
-      POSTGRES_DB: "${POSTGRES_DATABASE:-postgres}"
+      POSTGRES_DB: "${POSTGRES_DATABASE:-campus_connect_db}"
       TZ: "UTC"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"

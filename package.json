@@ -12,8 +12,7 @@
     "next": "16.0.1",
     "pg": "^8.16.3",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "ts-node": "^10.9.2"
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

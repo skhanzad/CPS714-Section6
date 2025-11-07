@@ -1,0 +1,4 @@
+FROM postgres:16
+
+# Copy initialization SQL files into the container's init directory
+COPY campus_connect_db.sql /docker-entrypoint-initdb.d/campus_connect_db.sql

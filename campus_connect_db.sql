@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict dcId6CK5eBO7P6kojJguZLeK1SQZJ75ZqA7zAVBvOObhlAu7sxy39M3yOQfgIOH
+\restrict W4ya3qaClyXgnysA1aOAYRzEQmeQX6UYF9IPMCGAkb3cMPZIF25SGIaz8OjnsGv
 
 -- Dumped from database version 16.10 (Debian 16.10-1.pgdg13+1)
 -- Dumped by pg_dump version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
@@ -18,6 +18,20 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -29,9 +43,8 @@ SET default_table_access_method = heap;
 CREATE TABLE public.users (
     id bigint NOT NULL,
     first_name text NOT NULL,
-    middle_name text,
     last_name text NOT NULL,
-    birthdate date NOT NULL,
+    email text NOT NULL,
     student_id text NOT NULL,
     password text NOT NULL,
     permission_level smallint DEFAULT 0 NOT NULL
@@ -58,8 +71,9 @@ ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: root
 --
 
-COPY public.users (id, first_name, middle_name, last_name, birthdate, student_id, password, permission_level) FROM stdin;
-1	Alice	B	Doe	2000-05-22	S10001	password123	0
+COPY public.users (id, first_name, last_name, email, student_id, password, permission_level) FROM stdin;
+1	Example	User	example.user@torontomu.ca	111111111	password123	0
+2	Example	User2	example.user2@torontomu.ca	111111112	password456	0
 \.
 
 
@@ -71,24 +85,8 @@ SELECT pg_catalog.setval('public.users_id_seq', 2, true);
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: root
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-
-
---
--- Name: users users_student_id_key; Type: CONSTRAINT; Schema: public; Owner: root
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_student_id_key UNIQUE (student_id);
-
-
---
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dcId6CK5eBO7P6kojJguZLeK1SQZJ75ZqA7zAVBvOObhlAu7sxy39M3yOQfgIOH
+\unrestrict W4ya3qaClyXgnysA1aOAYRzEQmeQX6UYF9IPMCGAkb3cMPZIF25SGIaz8OjnsGv
 

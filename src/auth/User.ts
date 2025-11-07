@@ -1,17 +1,5 @@
 import getDb from "./db";
 
-/*
-CREATE TABLE public.users (
-    id bigint NOT NULL,
-    first_name text NOT NULL,
-    last_name text NOT NULL,
-    email text NOT NULL,
-    student_id text NOT NULL,
-    password text NOT NULL,
-    role smallint DEFAULT 0 NOT NULL
-);
-*/
-
 export enum Role {
     STUDENT = 1,
     CLUBLEADER = 2,

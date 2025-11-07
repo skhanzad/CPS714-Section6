@@ -1,7 +1,7 @@
 services:
   postgres:
     build:
-          dockerfile: Dockerfile.postgres
+      dockerfile: Dockerfile.postgres
     container_name: cps714_postgres
     restart: always
     environment:

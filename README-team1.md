@@ -11,6 +11,18 @@ docker exec -it cps714_postgres /bin/bash
 psql -U root -d campus_connect_db
 ```
 
+## Database operations
+```bash
+# List all databases
+\list
+
+# Select a database
+\c <database>
+
+# List tables in current database
+\dt
+```
+
 ## Dumping and restoring the database
 ```bash
 # install psql tools

@@ -1,15 +1,61 @@
 import { create } from "zustand";
-import type {
-  Event,
-  Booking,
-  Room,
-  Resource,
-  Attendee,
-  Attachment,
-} from "@/src/types/models";
 
-// Export BookingStatus so it can be imported in other files
-export type { BookingStatus } from "@/src/types/models";
+// Define types locally since the module import is broken
+type BookingStatus = "pending" | "approved" | "denied";
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  capacity: number;
+  status: "active" | "canceled";
+  bookingId: string | null;
+  attendees: Attendee[];
+  attachments: Attachment[];
+}
+
+interface Booking {
+  id: string;
+  eventId: string;
+  roomId: string;
+  startTime: string;
+  endTime: string;
+  resources: string[];
+  status: BookingStatus;
+  requestedBy: string;
+}
+
+interface Room {
+  id: string;
+  name: string;
+  capacity: number;
+  features: string[];
+}
+
+interface Resource {
+  id: string;
+  name: string;
+}
+
+interface Attendee {
+  id: string;
+  name: string;
+  email?: string;
+  checkedIn: boolean;
+  qrId: string;
+}
+
+interface Attachment {
+  id: string;
+  type: "link" | "file";
+  url: string;
+  name?: string;
+  mime?: string;
+}
 
 function genToken(len = 10) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -39,22 +85,12 @@ type Actions = {
   cancelEvent: (id: string) => void;
   addBooking: (
     b: Omit<Booking, "id" | "status"> & {
-      status?: import("@/src/types/models").BookingStatus;
+      status?: BookingStatus;
     }
   ) => Booking;
-  setBookingStatus: (
-    id: string,
-    status: import("@/src/types/models").BookingStatus
-  ) => void;
-  addAttendee: (
-    eventId: string,
-    att: { name: string; email?: string }
-  ) => Attendee;
-  toggleCheckIn: (
-    eventId: string,
-    attendeeId: string,
-    checked?: boolean
-  ) => void;
+  setBookingStatus: (id: string, status: BookingStatus) => void;
+  addAttendee: (eventId: string, att: { name: string; email?: string }) => Attendee;
+  toggleCheckIn: (eventId: string, attendeeId: string, checked?: boolean) => void;
   checkInByQr: (qrId: string) => { eventId: string; attendeeId: string } | null;
   addAttachment: (eventId: string, attachment: Attachment) => void;
   removeAttachment: (eventId: string, attachmentId: string) => void;
@@ -105,22 +141,22 @@ export const useStore = create<State & Actions>((set, get) => ({
       attendees: [],
       attachments: e.attachments ?? [],
     };
-    set((s) => ({ events: [...s.events, newEvent] }));
+    set((s: State) => ({ events: [...s.events, newEvent] }));
     return newEvent;
   },
 
-  updateEvent: (id, patch) => {
-    set((s) => ({
+  updateEvent: (id: string, patch: Partial<Event>) => {
+    set((s: State) => ({
       events: s.events.map((ev) => (ev.id === id ? { ...ev, ...patch } : ev)),
     }));
   },
 
-  deleteEvent: (id) => {
-    set((s) => ({ events: s.events.filter((ev) => ev.id !== id) }));
+  deleteEvent: (id: string) => {
+    set((s: State) => ({ events: s.events.filter((ev) => ev.id !== id) }));
   },
 
-  cancelEvent: (id) => {
-    set((s) => ({
+  cancelEvent: (id: string) => {
+    set((s: State) => ({
       events: s.events.map((ev) =>
         ev.id === id ? { ...ev, status: "canceled" } : ev
       ),
@@ -148,20 +184,20 @@ export const useStore = create<State & Actions>((set, get) => ({
           bk.startTime >= newBooking.endTime
         )
     );
-    set((s) => ({ bookings: [...s.bookings, newBooking] }));
+    set((s: State) => ({ bookings: [...s.bookings, newBooking] }));
     if (overlaps) {
       // keep pending; UI can show conflict warning
     }
     return newBooking;
   },
 
-  setBookingStatus: (id, status) => {
-    set((s) => ({
+  setBookingStatus: (id: string, status: BookingStatus) => {
+    set((s: State) => ({
       bookings: s.bookings.map((bk) => (bk.id === id ? { ...bk, status } : bk)),
     }));
   },
 
-  addAttendee: (eventId, att) => {
+  addAttendee: (eventId: string, att: { name: string; email?: string }) => {
     // Prevent duplicate attendee for same event when name+email match
     const normalizedEmail = att.email ?? "";
     const existing = get()
@@ -183,7 +219,7 @@ export const useStore = create<State & Actions>((set, get) => ({
       checkedIn: false,
       qrId: genToken(),
     };
-    set((s) => ({
+    set((s: State) => ({
       events: s.events.map((ev) =>
         ev.id === eventId
           ? { ...ev, attendees: [...ev.attendees, attendee] }
@@ -193,8 +229,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     return attendee;
   },
 
-  toggleCheckIn: (eventId, attendeeId, checked) => {
-    set((s) => ({
+  toggleCheckIn: (eventId: string, attendeeId: string, checked?: boolean) => {
+    set((s: State) => ({
       events: s.events.map((ev) =>
         ev.id === eventId
           ? {
@@ -210,12 +246,12 @@ export const useStore = create<State & Actions>((set, get) => ({
     }));
   },
 
-  checkInByQr: (qrId) => {
+  checkInByQr: (qrId: string) => {
     const state = get();
     for (const ev of state.events) {
       const att = ev.attendees.find((a: Attendee) => a.qrId === qrId);
       if (att) {
-        set((s) => ({
+        set((s: State) => ({
           events: s.events.map((e2) =>
             e2.id === ev.id
               ? {
@@ -233,8 +269,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     return null;
   },
 
-  addAttachment: (eventId, attachment) => {
-    set((s) => ({
+  addAttachment: (eventId: string, attachment: Attachment) => {
+    set((s: State) => ({
       events: s.events.map((ev) =>
         ev.id === eventId
           ? { ...ev, attachments: [...ev.attachments, attachment] }
@@ -243,8 +279,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     }));
   },
 
-  removeAttachment: (eventId, attachmentId) => {
-    set((s) => ({
+  removeAttachment: (eventId: string, attachmentId: string) => {
+    set((s: State) => ({
       events: s.events.map((ev) =>
         ev.id === eventId
           ? {
@@ -258,8 +294,8 @@ export const useStore = create<State & Actions>((set, get) => ({
     }));
   },
 
-  removeAttendee: (eventId, attendeeId) => {
-    set((s) => ({
+  removeAttendee: (eventId: string, attendeeId: string) => {
+    set((s: State) => ({
       events: s.events.map((ev) =>
         ev.id === eventId
           ? {
@@ -273,3 +309,6 @@ export const useStore = create<State & Actions>((set, get) => ({
     }));
   },
 }));
+
+// Export BookingStatus so it can be imported in other files
+export type { BookingStatus };

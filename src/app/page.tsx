@@ -1,17 +1,31 @@
 "use client";
-import Link from "next/link";
-
+function redirectLogin() {
+  window.location.href = "/login";
+}
+function redirectSignup() {
+  window.location.href = "/signup";
+}
 export default function Home() {
   return (
-    <div className="card text-center">
-      <h1 className="text-3xl font-bold text-[#1E90FF] mb-3">CampusConnect</h1>
-      <p className="text-sm text-zinc-400 mb-8">
-        A centralized web platform for managing and promoting all TMU campus events
-      </p>
-      <div className="flex justify-center gap-4">
-        <Link href="/login" className="btn btn-primary">Login</Link>
-        <Link href="/signup" className="btn btn-secondary">Sign Up</Link>
-      </div>
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center py-32 px-16 bg-white dark:bg-black sm:items-start">
+        <div className="w-full flex-col text-center text-3xl font-bold">
+          <h1 className="block p-4">Hello</h1>
+          <button
+            className="mt-4 p-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+            onClick={redirectLogin}
+          >
+            Login
+          </button>
+          <br></br>
+          <button
+            className="mt-4 p-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+            onClick={redirectSignup}
+          >
+            Sign Up
+          </button>
+        </div>
+      </main>
     </div>
   );
 }

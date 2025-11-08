@@ -2,103 +2,119 @@ import getDb from "./db";
 
 //Maps role to int
 export enum Role {
-    TEST = 0,
-    STUDENT = 1,
-    CLUBLEADER = 2,
-    DEPARTMENTADMIN = 3,
-    SYSTEMADMIN = 4,
+  TEST = 0,
+  STUDENT = 1,
+  CLUBLEADER = 2,
+  DEPARTMENTADMIN = 3,
+  SYSTEMADMIN = 4,
 }
 
 export default class User {
-    //Verfies user log in with postgres
-    static async login(studentId: string, password: string): Promise<User | null> {
-        const db = await getDb();
-        const res = await db.query(
-            "SELECT * FROM users WHERE student_id = $1 AND password = $2",
-            [studentId, password]
-        );
-        if (res.rows.length === 0) {
-            return null;
+  //Verfies user log in with postgres
+  static async login(
+    studentId: string,
+    password: string
+  ): Promise<User | null> {
+    const db = await getDb();
+    const res = await db.query(
+      "SELECT * FROM users WHERE student_id = $1 AND password = $2",
+      [studentId, password]
+    );
+    if (res.rows.length === 0) {
+      return null;
+    }
+    const row = res.rows[0];
+    return new User(
+      row.id,
+      row.first_name,
+      row.last_name,
+      row.email,
+      row.student_id,
+      row.permission_level
+    );
+  }
+  /*
+        static async signup(firstName: string, lastName: string, email: string, studentId: string, password: string): Promise<User | null> {
+            const db = await getDb();
+            const res = await db.query(
+                "INSERT INTO users (first_name, last_name, email, student_id, password, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                [firstName, lastName, email, studentId, password, Role.STUDENT]
+            );
+            if (res.rows.length === 0) {
+                return null;
+            }
+            const row = res.rows[0];
+            return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
         }
-        const row = res.rows[0];
-        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
+    */
+  static async signup(
+    firstName: string,
+    lastName: string,
+    email: string,
+    studentId: string,
+    password: string
+  ): Promise<User | null> {
+    const db = await getDb();
+    const res = await db.query(
+      "INSERT INTO users (first_name, last_name, email, student_id, password, permission_level) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [firstName, lastName, email, studentId, password, Role.STUDENT]
+    );
+
+    if (res.rows.length === 0) {
+      return null;
     }
 
-    //Creates user with postgres
-    static async signup(
-        firstName: string,
-        lastName: string,
-        email: string,
-        studentId: string,
-        password: string
-    ): Promise<User | null> {
-        const db = await getDb();
-        const res = await db.query(
-            "INSERT INTO users (first_name, last_name, email, student_id, password, permission_level) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [firstName, lastName, email, studentId, password, Role.STUDENT]
-        );
+    const row = res.rows[0];
+    return new User(
+      row.id,
+      row.first_name,
+      row.last_name,
+      row.email,
+      row.student_id,
+      row.permission_level
+    );
+  }
 
-        if (res.rows.length === 0) {
-            return null;
-        }
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  studentId: string;
+  role: Role;
+  constructor(
+    id: string,
+    firstName: string,
+    lastName: string,
+    email: string,
+    studentId: string,
+    role: Role
+  ) {
+    this.id = id;
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.email = email;
+    this.studentId = studentId;
+    this.role = role;
+  }
 
-        const row = res.rows[0];
-        return new User(
-            row.id,
-            row.first_name,
-            row.last_name,
-            row.email,
-            row.student_id,
-            row.permission_level
-        );
-    }
-    //Checks if studentid exists in postgres
-    static async userexist(studentId: string): Promise<User | null> {
-        const db = await getDb();
-        const res = await db.query(
-            "SELECT * FROM users WHERE student_id = $1",
-            [studentId]
-        );
-        if (res.rows.length === 0) {
-            return null;
-        }
-        const row = res.rows[0];
-        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
-    }
+  //Class Functions
+  getFullName(): string {
+    return `${this.firstName} ${this.lastName}`;
+  }
 
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    studentId: string;
-    role: Role;
-    constructor(id: string, firstName: string, lastName: string, email: string, studentId: string, role: Role) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.studentId = studentId;
-        this.role = role;
-    }
+  isStudent(): boolean {
+    return this.role === Role.STUDENT;
+  }
 
-    //Class Functions
-    getFullName(): string {
-        return `${this.firstName} ${this.lastName}`;
-    }
+  isClubLeader(): boolean {
+    return this.role === Role.CLUBLEADER;
+  }
 
-    isStudent(): boolean {
-        return this.role === Role.STUDENT;
-    }
+  isDepartmentAdmin(): boolean {
+    return this.role === Role.DEPARTMENTADMIN;
+  }
 
-    isClubLeader(): boolean {
-        return this.role === Role.CLUBLEADER;
-    }
-
-    isDepartmentAdmin(): boolean {
-        return this.role === Role.DEPARTMENTADMIN;
-    }
-
-    isSystemAdmin(): boolean {
-        return this.role === Role.SYSTEMADMIN;
-    }
+  isSystemAdmin(): boolean {
+    return this.role === Role.SYSTEMADMIN;
+  }
 }

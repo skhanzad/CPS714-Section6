@@ -9,8 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@sendgrid/mail": "^8.1.6",
     "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.1.6",
     "next": "16.0.1",
     "pg": "^8.16.3",
     "react": "19.2.0",

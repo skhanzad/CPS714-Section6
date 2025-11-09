@@ -1,0 +1,222 @@
+"""
+Chart generation module for the Organizer Analytics Dashboard.
+
+This module provides reusable functions for creating various charts and visualizations
+with consistent styling and error handling.
+"""
+
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+from typing import Optional
+
+from config import (
+    COLORS,
+    CHART_HEIGHT_PERFORMANCE,
+    CHART_HEIGHT_STANDARD,
+    CHART_HEIGHT_MAJOR,
+    CHART_FONT_FAMILY,
+    CHART_FONT_SIZE
+)
+
+
+def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figure:
+    """
+    Create a grouped bar chart comparing RSVP count and actual attendance.
+    
+    Args:
+        events_df: DataFrame containing event data with event_name, rsvp_count, and actual_attendance
+    
+    Returns:
+        Plotly Figure object
+    """
+    figure = go.Figure()
+    
+    # Add RSVP Count bar
+    figure.add_trace(go.Bar(
+        name="RSVP Count",
+        x=events_df["event_name"],
+        y=events_df["rsvp_count"],
+        marker_color=COLORS["primary"],
+        text=events_df["rsvp_count"],
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>RSVP Count: %{y}<extra></extra>"
+    ))
+    
+    # Add Actual Attendance bar
+    figure.add_trace(go.Bar(
+        name="Actual Attendance",
+        x=events_df["event_name"],
+        y=events_df["actual_attendance"],
+        marker_color=COLORS["success"],
+        text=events_df["actual_attendance"],
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>Actual Attendance: %{y}<extra></extra>"
+    ))
+    
+    # Update layout
+    figure.update_layout(
+        title="Event Performance: RSVP vs Actual Attendance",
+        xaxis_title="Event Name",
+        yaxis_title="Number of People",
+        barmode="group",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        height=CHART_HEIGHT_PERFORMANCE,
+        hovermode="closest"
+    )
+    
+    return figure
+
+
+def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
+    """
+    Create a bar chart showing attendance rates for each event.
+    
+    Args:
+        events_df: DataFrame containing event data with event_name and attendance_rate
+    
+    Returns:
+        Plotly Figure object
+    """
+    figure = px.bar(
+        events_df,
+        x="event_name",
+        y="attendance_rate",
+        title="Attendance Rate (%)",
+        text=events_df["attendance_rate"].apply(lambda x: f"{x}%"),
+        color="attendance_rate",
+        color_continuous_scale="Blues",
+        labels={"attendance_rate": "Attendance Rate (%)", "event_name": "Event Name"}
+    )
+    
+    figure.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
+        height=CHART_HEIGHT_STANDARD,
+        showlegend=False,
+        hovermode="closest"
+    )
+    
+    figure.update_traces(
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>Attendance Rate: %{y}%<extra></extra>"
+    )
+    
+    return figure
+
+
+def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
+    """
+    Create a bar chart showing average feedback ratings per event.
+    
+    Args:
+        feedback_df: DataFrame containing feedback data with event_name and avg_rating
+    
+    Returns:
+        Plotly Figure object
+    """
+    figure = px.bar(
+        feedback_df,
+        x="event_name",
+        y="avg_rating",
+        color="avg_rating",
+        color_continuous_scale="YlOrRd",
+        title="Average Feedback Rating per Event (1–5)",
+        text=feedback_df["avg_rating"].round(1),
+        labels={"avg_rating": "Average Rating", "event_name": "Event Name"}
+    )
+    
+    figure.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
+        height=CHART_HEIGHT_STANDARD,
+        yaxis=dict(range=[0, 5]),
+        showlegend=False,
+        hovermode="closest"
+    )
+    
+    figure.update_traces(
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>Average Rating: %{y:.1f}/5<extra></extra>"
+    )
+    
+    return figure
+
+
+def create_audience_college_pie_chart(audience_by_college_df: pd.DataFrame) -> go.Figure:
+    """
+    Create a pie chart showing audience distribution by college.
+    
+    Args:
+        audience_by_college_df: DataFrame containing college and students columns
+    
+    Returns:
+        Plotly Figure object
+    """
+    figure = px.pie(
+        audience_by_college_df,
+        names="college",
+        values="students",
+        title="Audience Distribution by College",
+        color_discrete_sequence=px.colors.qualitative.Set3
+    )
+    
+    figure.update_traces(
+        textposition="inside",
+        textinfo="percent+label",
+        hovertemplate="<b>%{label}</b><br>Students: %{value}<br>Percentage: %{percent}<extra></extra>"
+    )
+    
+    figure.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
+        height=CHART_HEIGHT_STANDARD,
+        hovermode="closest"
+    )
+    
+    return figure
+
+
+def create_audience_major_bar_chart(audience_by_major_df: pd.DataFrame) -> go.Figure:
+    """
+    Create a horizontal bar chart showing audience distribution by major.
+    
+    Args:
+        audience_by_major_df: DataFrame containing major, students, and college columns
+    
+    Returns:
+        Plotly Figure object
+    """
+    figure = px.bar(
+        audience_by_major_df,
+        x="students",
+        y="major",
+        color="college",
+        orientation="h",
+        title="Audience Distribution by Major",
+        labels={"students": "Number of Students", "major": "Major", "college": "College"},
+        color_discrete_sequence=px.colors.qualitative.Set3
+    )
+    
+    figure.update_layout(
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
+        height=CHART_HEIGHT_MAJOR,
+        yaxis={"categoryorder": "total ascending"},
+        hovermode="closest"
+    )
+    
+    figure.update_traces(
+        hovertemplate="<b>%{y}</b><br>College: %{customdata[0]}<br>Students: %{x}<extra></extra>",
+        customdata=audience_by_major_df[["college"]]
+    )
+    
+    return figure
+

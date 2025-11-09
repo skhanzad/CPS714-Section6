@@ -21,12 +21,53 @@ export default class User {
         const row = res.rows[0];
         return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
     }
-
-    static async signup(firstName: string, lastName: string, email: string, studentId: string, password: string): Promise<User | null> {
+    /*
+        static async signup(firstName: string, lastName: string, email: string, studentId: string, password: string): Promise<User | null> {
+            const db = await getDb();
+            const res = await db.query(
+                "INSERT INTO users (first_name, last_name, email, student_id, password, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+                [firstName, lastName, email, studentId, password, Role.STUDENT]
+            );
+            if (res.rows.length === 0) {
+                return null;
+            }
+            const row = res.rows[0];
+            return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
+        }
+    */
+    static async signup(
+        firstName: string,
+        lastName: string,
+        email: string,
+        studentId: string,
+        password: string
+    ): Promise<User | null> {
         const db = await getDb();
         const res = await db.query(
-            "INSERT INTO users (first_name, last_name, email, student_id, password, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            "INSERT INTO users (first_name, last_name, email, student_id, password, permission_level) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [firstName, lastName, email, studentId, password, Role.STUDENT]
+        );
+
+        if (res.rows.length === 0) {
+            return null;
+        }
+
+        const row = res.rows[0];
+        return new User(
+            row.id,
+            row.first_name,
+            row.last_name,
+            row.email,
+            row.student_id,
+            row.permission_level
+        );
+    }
+
+    static async userexist(studentId: string): Promise<User | null> {
+        const db = await getDb();
+        const res = await db.query(
+            "SELECT * FROM users WHERE student_id = $1",
+            [studentId]
         );
         if (res.rows.length === 0) {
             return null;

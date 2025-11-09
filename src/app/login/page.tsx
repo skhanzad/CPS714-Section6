@@ -11,6 +11,17 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
+    const studentIdRegex = /^[0-9]+$/;
+      if (!studentIdRegex.test(studentId)) {
+          setError("Student ID must contain digits only.");
+          return;
+      }
+
+      if (password.length <= 6) {
+          setError("Password must be longer than 6 characters.");
+          return;
+      }
+    
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,6 +50,8 @@ export default function LoginPage() {
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
               className="border rounded w-full p-2"
+              pattern="\d+"
+              title="Digits only"
               required
             />
           </div>
@@ -51,6 +64,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="border rounded w-full p-2"
+              minLength={7}
               required
             />
           </div>

@@ -63,6 +63,19 @@ export default class User {
         );
     }
 
+    static async userexist(studentId: string): Promise<User | null> {
+        const db = await getDb();
+        const res = await db.query(
+            "SELECT * FROM users WHERE student_id = $1",
+            [studentId]
+        );
+        if (res.rows.length === 0) {
+            return null;
+        }
+        const row = res.rows[0];
+        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
+    }
+
     id: string;
     firstName: string;
     lastName: string;

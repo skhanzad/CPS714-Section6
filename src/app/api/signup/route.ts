@@ -5,9 +5,9 @@ export async function POST(req: Request) {
     try {
         const { firstName, lastName, email, studentId, password } = await req.json();
         
-        const existingUser = await User.login(studentId, password);
+        const existingUser = await User.userexist(studentId);
         if (existingUser) {
-            return NextResponse.json({ error: "User already exists" }, { status: 409 });
+            return NextResponse.json({ error: "User with ID already exists" }, { status: 409 });
         }
 
         const newUser = await User.signup(firstName, lastName, email, studentId, password);

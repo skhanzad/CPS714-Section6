@@ -16,6 +16,7 @@ export default function SignupPage() {
         e.preventDefault();
         setError(null);
 
+        //Does front end input validation
         const f = firstName.trim();
         const l = lastName.trim();
         const em = email.trim().toLowerCase();
@@ -54,6 +55,7 @@ export default function SignupPage() {
             return;
         }
 
+        //Calls sign up API
         try {
             const res = await fetch("/api/signup", {
                 method: "POST",

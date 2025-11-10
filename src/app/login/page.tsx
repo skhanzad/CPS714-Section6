@@ -7,10 +7,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  function redirectSignup() {
+  window.location.href = "/signup";
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    //Does frontend input validation
     const studentIdRegex = /^[0-9]+$/;
       if (!studentIdRegex.test(studentId)) {
           setError("Student ID must contain digits only.");
@@ -22,6 +27,7 @@ export default function LoginPage() {
           return;
       }
     
+    //Calls login API
     const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -78,6 +84,8 @@ export default function LoginPage() {
             Login
           </button>
         </form>
+        <br></br>
+        <button className="mt-4 p-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition" onClick={redirectSignup}>Sign Up</button>
       </main>
     </div>
   );

@@ -18,7 +18,7 @@ INSERT INTO users (
 ) VALUES (
     'Test',
     'User',
-    'test.user@example.com',
+    'test.user@torontomu.ca',
     '123',
     'password',
     4

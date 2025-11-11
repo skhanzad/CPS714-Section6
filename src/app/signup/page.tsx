@@ -74,84 +74,87 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-            <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center py-32 px-16 bg-white dark:bg-black">
-                <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
-                    <label>
-                        First name
+        <div className="min-h-screen flex items-center justify-center">
+            <main className="card w-full max-w-md">
+                <h1 className="text-2xl font-bold text-center text-blue-500 mb-6">Sign Up</h1>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <label className="block">
+                        <span className="block font-medium mb-2 text-sm">First name</span>
                         <input
                             id="firstName"
                             type="text"
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
-                            className="border rounded w-full p-2"
+                            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                             maxLength={32}
                             pattern="[A-Za-z]{1,32}"
                             title="Letters only, up to 32 characters"
                         />
                     </label>
-                    <br />
-                    <label>
-                        Last name
+
+                    <label className="block">
+                        <span className="block font-medium mb-2 text-sm">Last name</span>
                         <input
                             id="lastName"
                             type="text"
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
-                            className="border rounded w-full p-2"
+                            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                             maxLength={32}
                             pattern="[A-Za-z]{1,32}"
                             title="Letters only, up to 32 characters"
                         />
                     </label>
-                    <br />
-                    <label>
-                        Email
+
+                    <label className="block">
+                        <span className="block font-medium mb-2 text-sm">Email</span>
                         <input
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="border rounded w-full p-2"
+                            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                             pattern="^[^\s@]+@torontomu\.ca$"
                             title="Email must end with @torontomu.ca"
                         />
                     </label>
-                    <br />
-                    <label>
-                        Student ID
+
+                    <label className="block">
+                        <span className="block font-medium mb-2 text-sm">Student ID</span>
                         <input
                             id="studentId"
                             type="text"
                             value={studentId}
                             onChange={(e) => setStudentId(e.target.value)}
-                            className="border rounded w-full p-2"
+                            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                             inputMode="numeric"
                             pattern="\d+"
                             title="Digits only"
                         />
                     </label>
-                    <br />
-                    <label>
-                        Password
+
+                    <label className="block">
+                        <span className="block font-medium mb-2 text-sm">Password</span>
                         <input
                             id="password"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="border rounded w-full p-2"
+                            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             required
                             minLength={7}
                             title="Password must be longer than 6 characters"
                         />
                     </label>
-                    <br />
-                    {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
-                    <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary mt-2"
+                    >
                         Sign Up
                     </button>
                 </form>

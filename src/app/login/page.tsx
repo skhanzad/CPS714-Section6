@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   function redirectSignup() {
-  window.location.href = "/signup";
+    window.location.href = "/signup";
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -17,16 +17,16 @@ export default function LoginPage() {
 
     //Does frontend input validation
     const studentIdRegex = /^[0-9]+$/;
-      if (!studentIdRegex.test(studentId)) {
-          setError("Student ID must contain digits only.");
-          return;
-      }
+    if (!studentIdRegex.test(studentId)) {
+      setError("Student ID must contain digits only.");
+      return;
+    }
 
-      if (password.length <= 6) {
-          setError("Password must be longer than 6 characters.");
-          return;
-      }
-    
+    if (password.length <= 6) {
+      setError("Password must be longer than 6 characters.");
+      return;
+    }
+
     //Calls login API
     const res = await fetch("/api/login", {
       method: "POST",
@@ -45,48 +45,65 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center py-32 px-16 bg-white dark:bg-black">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="card w-full max-w-md">
+        <h1 className="text-2xl font-bold text-center text-blue-500 mb-6">
+          Login
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="studentId" className="block font-medium mb-1">Student ID</label>
+            <label
+              htmlFor="studentId"
+              className="block font-medium mb-2 text-sm"
+            >
+              Student ID
+            </label>
             <input
               id="studentId"
               type="text"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
-              className="border rounded w-full p-2"
-              pattern="\d+"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              pattern="[0-9]+"
               title="Digits only"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block font-medium mb-1">Password</label>
+            <label
+              htmlFor="password"
+              className="block font-medium mb-2 text-sm"
+            >
+              Password
+            </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border rounded w-full p-2"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               minLength={7}
               required
             />
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            className="btn btn-primary w-full mt-2"
           >
             Login
           </button>
         </form>
-        <br></br>
-        <button className="mt-4 p-4 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition" onClick={redirectSignup}>Sign Up</button>
-      </main>
+
+        <button
+          className="btn btn-secondary w-full mt-4"
+          onClick={redirectSignup}
+        >
+          Sign Up
+        </button>
+      </div>
     </div>
   );
 }

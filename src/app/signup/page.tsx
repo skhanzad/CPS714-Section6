@@ -151,6 +151,12 @@ export default function SignupPage() {
                         />
                     </label>
 
+                    {error && (
+                        <div className="bg-red-500/10 border border-red-500/50 rounded-lg px-4 py-3 text-red-400 text-sm">
+                        {error}
+                        </div>
+                    )}
+
                     <button
                         type="submit"
                         className="btn btn-primary mt-2"

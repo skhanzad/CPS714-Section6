@@ -1,3 +1,7 @@
+-- ------------------------------------------------------------
+--  EVENTS, ROOMS, BOOKINGS, AND RELATED TABLES
+-- ------------------------------------------------------------
+
 CREATE TABLE IF NOT EXISTS rooms (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -20,6 +24,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   requested_by TEXT NOT NULL,
   FOREIGN KEY (room_id) REFERENCES rooms(id)
 );
+
 CREATE INDEX IF NOT EXISTS idx_bookings_room_time
   ON bookings(room_id, start_time, end_time);
 
@@ -45,7 +50,9 @@ CREATE TABLE IF NOT EXISTS attendees (
   qr_id TEXT NOT NULL UNIQUE,
   FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS idx_attendees_event ON attendees(event_id);
+
+CREATE INDEX IF NOT EXISTS idx_attendees_event
+  ON attendees(event_id);
 
 CREATE TABLE IF NOT EXISTS attachments (
   id TEXT PRIMARY KEY,
@@ -56,16 +63,24 @@ CREATE TABLE IF NOT EXISTS attachments (
   mime TEXT,
   FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS idx_attachments_event ON attachments(event_id);
 
-INSERT INTO rooms (id, name, capacity, features) VALUES
-  ('R101','Room 101',40,'["projector"]'::jsonb),
-  ('R202','Lecture Hall 202',120,'["projector","microphone"]'::jsonb),
-  ('M15','Meeting Room 15',12,'["whiteboard"]'::jsonb)
+CREATE INDEX IF NOT EXISTS idx_attachments_event
+  ON attachments(event_id);
+
+-- ------------------------------------------------------------
+--  SAMPLE DATA INSERTS
+-- ------------------------------------------------------------
+
+INSERT INTO rooms (id, name, capacity, features)
+VALUES
+  ('R101', 'Room 101', 40, '["projector"]'::jsonb),
+  ('R202', 'Lecture Hall 202', 120, '["projector","microphone"]'::jsonb),
+  ('M15',  'Meeting Room 15', 12, '["whiteboard"]'::jsonb)
 ON CONFLICT DO NOTHING;
 
-INSERT INTO resources (id, name) VALUES
-  ('res-projector','Projector'),
-  ('res-microphone','Microphone'),
-  ('res-catering','Catering')
+INSERT INTO resources (id, name)
+VALUES
+  ('res-projector',  'Projector'),
+  ('res-microphone', 'Microphone'),
+  ('res-catering',   'Catering')
 ON CONFLICT DO NOTHING;

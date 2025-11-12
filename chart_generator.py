@@ -32,6 +32,10 @@ def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figur
     """
     figure = go.Figure()
     
+    # Calculate max value for y-axis padding
+    max_value = max(events_df["rsvp_count"].max(), events_df["actual_attendance"].max())
+    yaxis_max = max_value * 1.15  # Add 15% padding above max value
+    
     # Add RSVP Count bar
     figure.add_trace(go.Bar(
         name="RSVP Count",
@@ -59,13 +63,15 @@ def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figur
         title="Event Performance: RSVP vs Actual Attendance",
         xaxis_title="Event Name",
         yaxis_title="Number of People",
+        yaxis=dict(range=[0, yaxis_max]),
         barmode="group",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         height=CHART_HEIGHT_PERFORMANCE,
-        hovermode="closest"
+        hovermode="closest",
+        margin=dict(t=120, b=50, l=50, r=50)  # Increased top margin to prevent text cutoff
     )
     
     return figure
@@ -81,6 +87,15 @@ def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
     Returns:
         Plotly Figure object
     """
+    # Get min and max attendance rates for color scale
+    min_rate = events_df["attendance_rate"].min()
+    max_rate = events_df["attendance_rate"].max()
+    
+    # Calculate y-axis max with padding for text
+    yaxis_max = max(100, max_rate * 1.15)  # Add 15% padding, but at least go to 100%
+    
+    # Use a color scale that doesn't start with white
+    # Using a custom blue scale that starts from a darker blue
     figure = px.bar(
         events_df,
         x="event_name",
@@ -88,7 +103,8 @@ def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
         title="Attendance Rate (%)",
         text=events_df["attendance_rate"].apply(lambda x: f"{x}%"),
         color="attendance_rate",
-        color_continuous_scale="Blues",
+        color_continuous_scale=[[0, "#4a90e2"], [1, "#1e3a8a"]],  # Darker blue to darkest blue
+        range_color=[min_rate, max_rate],
         labels={"attendance_rate": "Attendance Rate (%)", "event_name": "Event Name"}
     )
     
@@ -97,8 +113,10 @@ def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
         height=CHART_HEIGHT_STANDARD,
+        yaxis=dict(range=[0, yaxis_max]),
         showlegend=False,
-        hovermode="closest"
+        hovermode="closest",
+        margin=dict(t=120, b=50, l=50, r=50)  # Increased top margin to prevent text cutoff
     )
     
     figure.update_traces(
@@ -119,6 +137,10 @@ def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
     Returns:
         Plotly Figure object
     """
+    # Calculate y-axis max with padding for text
+    max_rating = feedback_df["avg_rating"].max()
+    yaxis_max = max(5, max_rating * 1.15)  # Add 15% padding, but at least go to 5
+    
     figure = px.bar(
         feedback_df,
         x="event_name",
@@ -135,9 +157,10 @@ def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(family=CHART_FONT_FAMILY, size=CHART_FONT_SIZE),
         height=CHART_HEIGHT_STANDARD,
-        yaxis=dict(range=[0, 5]),
+        yaxis=dict(range=[0, yaxis_max]),
         showlegend=False,
-        hovermode="closest"
+        hovermode="closest",
+        margin=dict(t=120, b=50, l=50, r=50)  # Increased top margin to prevent text cutoff
     )
     
     figure.update_traces(

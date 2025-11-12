@@ -285,8 +285,11 @@ def open_browser():
 if __name__ == "__main__":
     if success:
         logger.info(f"Starting {APP_TITLE} on http://{DEFAULT_HOST}:{DEFAULT_PORT}")
-        Timer(1, open_browser).start()
-        app.run(debug=DEBUG_MODE, host=DEFAULT_HOST, port=DEFAULT_PORT)
+        # Only open browser in the actual server process (reloader child), not the parent process
+        import os
+        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not DEBUG_MODE:
+            Timer(1, open_browser).start()
+        app.run(debug=DEBUG_MODE, host=DEFAULT_HOST, port=DEFAULT_PORT, use_reloader=DEBUG_MODE)
     else:
         logger.error(f"Failed to start application: {error_message}")
         print(f"Error: {error_message}")

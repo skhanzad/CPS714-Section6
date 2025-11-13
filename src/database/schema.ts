@@ -1,4 +1,11 @@
-import { integer, pgTable, text, timestamp, uuid, smallint } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  smallint,
+} from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -19,8 +26,8 @@ export const rewardsProfilesTable = pgTable("rewards_profile", {
   userId: uuid("user_id")
     .notNull()
     .references(() => usersTable.id),
-  currentCredits: integer("current_credits").notNull().default(0),
   earnedCredits: integer("earned_credits").notNull().default(0),
+  currentCredits: integer("current_credits").notNull().default(0),
 });
 
 export const creditTransactionsTable = pgTable("credit_transactions", {

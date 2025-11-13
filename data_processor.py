@@ -187,14 +187,15 @@ def prepare_audience_by_college(audience_df: pd.DataFrame) -> pd.DataFrame:
         audience_df: DataFrame containing audience data
     
     Returns:
-        DataFrame with college and total students
+        DataFrame with college and total students, or empty DataFrame if input is empty
     
     Raises:
         DataProcessingError: If processing fails
     """
     try:
         if audience_df.empty:
-            raise DataProcessingError(f"{ERROR_MESSAGES['empty_data']} Cannot process empty audience data.")
+            logger.warning("Audience DataFrame is empty, returning empty college summary.")
+            return pd.DataFrame(columns=["college", "students"])
         
         college_summary = (
             audience_df.groupby("college")["students"]
@@ -217,14 +218,15 @@ def prepare_audience_by_major(audience_df: pd.DataFrame) -> pd.DataFrame:
         audience_df: DataFrame containing audience data
     
     Returns:
-        DataFrame sorted by students (ascending)
+        DataFrame sorted by students (ascending), or empty DataFrame if input is empty
     
     Raises:
         DataProcessingError: If processing fails
     """
     try:
         if audience_df.empty:
-            raise DataProcessingError(f"{ERROR_MESSAGES['empty_data']} Cannot process empty audience data.")
+            logger.warning("Audience DataFrame is empty, returning empty major summary.")
+            return pd.DataFrame(columns=["college", "major", "students"])
         
         # Sort by students in ascending order for better chart display
         sorted_df = audience_df.sort_values("students", ascending=True).copy()

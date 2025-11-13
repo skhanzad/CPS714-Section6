@@ -263,10 +263,13 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
     
     Args:
         event_names: List of event names to include in dropdown
+        initial_comments: Initial comments to display
+        initial_event_name: Initial event name to display
     
     Returns:
         HTML Div containing the dropdown component
     """
+    # Always include the components with IDs for callbacks, even when empty
     if not event_names:
         return html.Div([
             html.H3(
@@ -285,6 +288,27 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
                     "fontSize": "14px",
                     "fontStyle": "italic"
                 }
+            ),
+            # Include dropdown with empty options (hidden but present for callbacks)
+            dcc.Dropdown(
+                id="event-comments-dropdown",
+                options=[],
+                value=None,
+                placeholder="No events available",
+                disabled=True,
+                style={
+                    "marginBottom": "20px",
+                    "backgroundColor": COLORS["white"],
+                    "display": "none"  # Hide when empty
+                }
+            ),
+            # Always include the container for callbacks
+            html.Div(
+                id="comments-display-container",
+                children=create_comments_display(
+                    [],
+                    "No Event Selected"
+                )
             )
         ], style={"marginTop": "30px"})
     

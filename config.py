@@ -15,11 +15,11 @@ load_dotenv()
 APP_TITLE = "Organizer Analytics Dashboard"
 APP_DESCRIPTION = "Comprehensive event analytics and audience insights"
 DEFAULT_PORT = 8050
-DEFAULT_HOST = "127.0.0.1"
+DEFAULT_HOST = "0.0.0.0"  # Changed to 0.0.0.0 to allow connections from other origins
 DEBUG_MODE = True
 
 # Data Source Configuration
-DUMMY_MODE = True  # Set to False to use PostgreSQL database
+DUMMY_MODE = False  # Set to False to use PostgreSQL database
 
 # File Paths
 DATA_DIRECTORY = "data"
@@ -30,14 +30,14 @@ AUDIENCE_CSV_PATH = os.path.join(DATA_DIRECTORY, "audience.csv")
 # Database Configuration (used when DUMMY_MODE is False)
 DATABASE_CONFIG = {
     "host": os.getenv("POSTGRES_HOST", "localhost"),
-    "database": os.getenv("POSTGRES_DB", "analytics_db"),
-    "user": os.getenv("POSTGRES_USER", "postgres"),
-    "password": os.getenv("POSTGRES_PASSWORD", ""),
+    "database": os.getenv("POSTGRES_DB", "campus_connect_db"),
+    "user": os.getenv("POSTGRES_USER", "root"),
+    "password": os.getenv("POSTGRES_PASSWORD", "admin"),
     "port": os.getenv("POSTGRES_PORT", "5432")
 }
 
 # Database Queries
-EVENTS_QUERY = "SELECT * FROM events;"
+EVENTS_QUERY = "SELECT * FROM event_summary;"
 FEEDBACK_QUERY = "SELECT * FROM feedback;"
 AUDIENCE_QUERY = "SELECT * FROM audience;"
 

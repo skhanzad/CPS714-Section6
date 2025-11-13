@@ -216,10 +216,10 @@ def load_feedback_from_database(connection: psycopg2.extensions.connection) -> p
         connection: Database connection object
     
     Returns:
-        DataFrame containing feedback data
+        DataFrame containing feedback data, or empty DataFrame if table/view doesn't exist
     
     Raises:
-        DataLoadError: If query fails or data is invalid
+        DataLoadError: If query fails (except for missing table/view)
     """
     try:
         feedback_df = pd.read_sql(FEEDBACK_QUERY, connection)
@@ -227,7 +227,15 @@ def load_feedback_from_database(connection: psycopg2.extensions.connection) -> p
         logger.info(f"Successfully loaded {len(feedback_df)} feedback records from database.")
         return feedback_df
     except Exception as e:
-        raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading feedback: {str(e)}")
+        error_str = str(e)
+        # Check if the error is due to missing table/view
+        if "does not exist" in error_str or "relation" in error_str.lower():
+            logger.warning(f"Feedback table/view not found in database. Returning empty DataFrame. Error: {error_str}")
+            # Return empty DataFrame with expected columns
+            empty_df = pd.DataFrame(columns=["event_name", "avg_rating", "feedback_count"])
+            logger.info("Returning empty feedback DataFrame (table/view not available).")
+            return empty_df
+        raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading feedback: {error_str}")
 
 
 def load_audience_from_database(connection: psycopg2.extensions.connection) -> pd.DataFrame:
@@ -238,10 +246,10 @@ def load_audience_from_database(connection: psycopg2.extensions.connection) -> p
         connection: Database connection object
     
     Returns:
-        DataFrame containing audience data
+        DataFrame containing audience data, or empty DataFrame if table/view doesn't exist
     
     Raises:
-        DataLoadError: If query fails or data is invalid
+        DataLoadError: If query fails (except for missing table/view)
     """
     try:
         audience_df = pd.read_sql(AUDIENCE_QUERY, connection)
@@ -249,7 +257,15 @@ def load_audience_from_database(connection: psycopg2.extensions.connection) -> p
         logger.info(f"Successfully loaded {len(audience_df)} audience records from database.")
         return audience_df
     except Exception as e:
-        raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading audience: {str(e)}")
+        error_str = str(e)
+        # Check if the error is due to missing table/view
+        if "does not exist" in error_str or "relation" in error_str.lower():
+            logger.warning(f"Audience table/view not found in database. Returning empty DataFrame. Error: {error_str}")
+            # Return empty DataFrame with expected columns
+            empty_df = pd.DataFrame(columns=["college", "major", "students"])
+            logger.info("Returning empty audience DataFrame (table/view not available).")
+            return empty_df
+        raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading audience: {error_str}")
 
 
 def load_all_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:

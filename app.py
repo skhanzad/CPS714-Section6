@@ -7,6 +7,7 @@ handles the overall application flow with comprehensive error handling.
 
 import dash
 from dash import dcc, html, Input, Output
+from flask import request, make_response
 import webbrowser
 from threading import Timer
 import logging
@@ -59,6 +60,27 @@ logger = logging.getLogger(__name__)
 # Initialize Dash application
 app = dash.Dash(__name__)
 app.title = APP_TITLE
+
+# Configure server to allow iframe embedding
+# Remove X-Frame-Options header to allow embedding in iframes
+@app.server.after_request
+def remove_xframe_options(response):
+    response.headers.pop('X-Frame-Options', None)
+    # Add CORS headers to allow cross-origin requests
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    return response
+
+# Handle OPTIONS requests for CORS preflight
+@app.server.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
 
 # Global variables to store loaded data
 events_df = None
@@ -250,12 +272,12 @@ app.layout = create_dashboard_layout()
     Output("comments-display-container", "children"),
     Input("event-comments-dropdown", "value")
 )
-def update_comments_display(selected_event: str):
+def update_comments_display(selected_event):
     """
     Update the comments display when a different event is selected.
     
     Args:
-        selected_event: Name of the selected event
+        selected_event: Name of the selected event (can be None)
     
     Returns:
         HTML Div containing the comments for the selected event
@@ -263,7 +285,7 @@ def update_comments_display(selected_event: str):
     global comments_by_event
     
     # Handle case when no event is selected or no comments available
-    if not selected_event:
+    if not selected_event or selected_event is None:
         return create_comments_display([], "No Event Selected")
     
     if not comments_by_event:
@@ -277,7 +299,8 @@ def update_comments_display(selected_event: str):
 def open_browser():
     """Open the web browser to the dashboard URL."""
     try:
-        webbrowser.open_new(f"http://{DEFAULT_HOST}:{DEFAULT_PORT}/")
+        # Use localhost for browser URL even though server listens on 0.0.0.0
+        webbrowser.open_new(f"http://localhost:{DEFAULT_PORT}/")
     except Exception as e:
         logger.warning(f"Could not open browser automatically: {str(e)}")
 
@@ -285,11 +308,16 @@ def open_browser():
 if __name__ == "__main__":
     if success:
         logger.info(f"Starting {APP_TITLE} on http://{DEFAULT_HOST}:{DEFAULT_PORT}")
+        logger.info(f"Dashboard will be available at: http://localhost:{DEFAULT_PORT}")
         # Only open browser in the actual server process (reloader child), not the parent process
         import os
         if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not DEBUG_MODE:
             Timer(1, open_browser).start()
         app.run(debug=DEBUG_MODE, host=DEFAULT_HOST, port=DEFAULT_PORT, use_reloader=DEBUG_MODE)
     else:
-        logger.error(f"Failed to start application: {error_message}")
-        print(f"Error: {error_message}")
+        logger.error(f"Failed to load data: {error_message}")
+        logger.error("Starting server anyway to display error message...")
+        logger.info(f"Starting {APP_TITLE} on http://{DEFAULT_HOST}:{DEFAULT_PORT}")
+        logger.info(f"Dashboard will be available at: http://localhost:{DEFAULT_PORT}")
+        # Start server even with errors so user can see the error message
+        app.run(debug=DEBUG_MODE, host=DEFAULT_HOST, port=DEFAULT_PORT, use_reloader=DEBUG_MODE)

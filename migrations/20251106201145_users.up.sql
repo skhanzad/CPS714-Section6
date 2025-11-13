@@ -7,3 +7,19 @@ CREATE TABLE users (
     password text NOT NULL,
     permission_level smallint DEFAULT 0 NOT NULL
 );
+
+INSERT INTO users (
+    first_name,
+    last_name,
+    email,
+    student_id,
+    password,
+    permission_level
+) VALUES (
+    'Test',
+    'User',
+    'test.user@torontomu.ca',
+    '123',
+    'password',
+    4
+);

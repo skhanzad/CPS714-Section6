@@ -57,9 +57,12 @@ export const listLeaderboardByN = async (N: number) => {
   const leaderboard = await db
     .select({
       userId: rewardsProfilesTable.userId,
+      firstName: usersTable.firstName,
+      lastName: usersTable.lastName,
       points: rewardsProfilesTable.earnedCredits,
     })
     .from(rewardsProfilesTable)
+    .leftJoin(usersTable, eq(rewardsProfilesTable.userId, usersTable.id))
     .orderBy(sql`points DESC`)
     .limit(N);
 

@@ -141,4 +141,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # DOcker Volumes
-.postgressendgrid.env
+.postgres
+sendgrid.env

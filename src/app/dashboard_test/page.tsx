@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 import { cookies } from "next/headers";
 import { Role } from "@/auth/User";
 import LogoutButton from "../component/logoutbutton";
+import { getCurrentUser } from "@/app/lib/getCurrentUser";
 
 const roleColors: Record<Role, string> = {
   [Role.TEST]: "bg-gray-500",
@@ -20,11 +21,8 @@ const roleNames: Record<Role, string> = {
 };
 
 export default async function DashboardPage() {
-  //Catches Cookie
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) {
+  const user = await getCurrentUser(); // await the async function
+  if (!user) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-100 text-red-600 text-xl">
         No token found. Please <a href="/login" className="underline ml-1">login</a>.
@@ -32,34 +30,18 @@ export default async function DashboardPage() {
     );
   }
 
-  //Decoded cookie using the JWT_SECRET
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      studentId: string;
-      email: string;
-      role: Role;
-    };
-    //Decoded role from User.ts
-    const role = decoded.role as Role;
-    const bgColor = roleColors[role];
-    const roleName = roleNames[role];
+  //Decoded role from User.ts
+  const role = user.role as Role;
+  const bgColor = roleColors[role];
+  const roleName = roleNames[role];
 
-    //Returns background colour based on role and logout button
-    return (
-      <div
-        className={`flex h-screen items-center justify-center text-white text-4xl font-bold ${bgColor}`}
-      >
-        {roleName}
-        <LogoutButton />
-      </div>
-    );
-  } catch (err) {
-    console.error("Invalid JWT:", err);
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-100 text-red-600 text-xl">
-        Invalid or expired token. Please <a href="/login" className="underline ml-1">login again</a>.
-      </div>
-    );
-  }
+  //Returns background colour based on role and logout button
+  return (
+    <div
+      className={`flex h-screen items-center justify-center text-white text-4xl font-bold ${bgColor}`}
+    >
+      {roleName}
+      <LogoutButton />
+    </div>
+  );
 }

@@ -1,6 +1,7 @@
 import getDb from "./db";
 
 export enum Role {
+    TEST = 0,
     STUDENT = 1,
     CLUBLEADER = 2,
     DEPARTMENTADMIN = 3,
@@ -18,7 +19,7 @@ export default class User {
             return null;
         }
         const row = res.rows[0];
-        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.role);
+        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
     }
 
     static async signup(firstName: string, lastName: string, email: string, studentId: string, password: string): Promise<User | null> {
@@ -31,7 +32,7 @@ export default class User {
             return null;
         }
         const row = res.rows[0];
-        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.role);
+        return new User(row.id, row.first_name, row.last_name, row.email, row.student_id, row.permission_level);
     }
 
     id: string;

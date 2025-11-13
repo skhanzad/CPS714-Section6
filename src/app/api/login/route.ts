@@ -2,17 +2,19 @@ import { NextResponse } from "next/server";
 const jwt = require("jsonwebtoken");
 import User from "@/auth/User"; // adjust import path to where your User.ts lives
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = process.env.JWT_SECRET!; // Imports JWT_secret
 
 export async function POST(req: Request) {
   try {
     const { studentId, password } = await req.json();
 
+    // Determines if user has account
     const user = await User.login(studentId, password);
     if (!user) {
       return NextResponse.json({ error: "Invalid student ID or password" }, { status: 401 });
     }
 
+    // Init token with user information, lasts for 1 hour
     const token = jwt.sign(
       {
         id: user.id,

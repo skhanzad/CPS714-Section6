@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 import { cookies } from "next/headers";
 import { Role } from "@/auth/User";
+import LogoutButton from "../component/logoutbutton";
 
 const roleColors: Record<Role, string> = {
   [Role.TEST]: "bg-gray-500",
@@ -19,6 +20,7 @@ const roleNames: Record<Role, string> = {
 };
 
 export default async function DashboardPage() {
+  //Catches Cookie
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -30,6 +32,7 @@ export default async function DashboardPage() {
     );
   }
 
+  //Decoded cookie using the JWT_SECRET
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       id: string;
@@ -37,16 +40,18 @@ export default async function DashboardPage() {
       email: string;
       role: Role;
     };
-
+    //Decoded role from User.ts
     const role = decoded.role as Role;
     const bgColor = roleColors[role];
     const roleName = roleNames[role];
 
+    //Returns background colour based on role and logout button
     return (
       <div
         className={`flex h-screen items-center justify-center text-white text-4xl font-bold ${bgColor}`}
       >
         {roleName}
+        <LogoutButton />
       </div>
     );
   } catch (err) {

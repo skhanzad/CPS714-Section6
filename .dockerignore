@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Node
+node_modules
+.next
+npm-debug.log
+package-lock.json
+
+# Docker
+Dockerfile*
+docker-compose.yml
+.dockerignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Documentation
+*.md
+README*
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# Other
+.postgres
+migrations
+server/
+src/
+scripts/
+docker_config_output.txt
+

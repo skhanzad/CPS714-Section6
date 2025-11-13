@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER:-root}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-admin}"
-      POSTGRES_DB: "${POSTGRES_DATABASE:-postgres}"
+      POSTGRES_DB: "campus_connect_db"
       TZ: "UTC"
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -14,7 +14,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-root} -d ${POSTGRES_DATABASE:-postgres}",
+          "pg_isready -U ${POSTGRES_USER:-root} -d campus_connect_db",
         ]
       interval: 5s
       retries: 5
@@ -31,11 +31,31 @@ services:
         condition: service_healthy
     volumes:
       - ./migrations:/migrations
-    entrypoint: [
-        "/bin/sh",
-        "-c",
-        "migrate \
-        -path=/migrations \
-        -database=postgresql://${POSTGRES_USER:-root}:${POSTGRES_PASSWORD:-admin}@postgres:5432/${POSTGRES_DATABASE:-postgres}?sslmode=disable \
-        up",
-      ]
+    entrypoint: >
+      migrate -path=/migrations -database "postgresql://${POSTGRES_USER:-root}:${POSTGRES_PASSWORD:-admin}@postgres:5432/campus_connect_db?sslmode=disable" up
+
+  dash:
+    build:
+      context: .
+      dockerfile: Dockerfile.dash
+    container_name: cps714_dash
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8050:8050"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: "${POSTGRES_DB:-campus_connect_db}"
+      POSTGRES_USER: "${POSTGRES_USER:-root}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-admin}"
+      POSTGRES_PORT: "5432"
+    volumes:
+      - ./data:/app/data:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

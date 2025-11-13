@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     if (res.ok) {
       // redirect to test dashboard
-      window.location.href = "/dashboard_test";
+      window.location.href = "/leaderboard";
     } else {
       setError(data.error || "Login failed");
     }

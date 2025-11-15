@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { PoolConfig } from "pg";
 import * as schema from "./schema";

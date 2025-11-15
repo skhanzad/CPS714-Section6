@@ -47,16 +47,28 @@ CREATE TABLE public.users (
     password text NOT NULL,
     permission_level smallint DEFAULT 0 NOT NULL
 );
+```
 
-ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.users_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
-);
+## Log off Button / User info
+```
+Adding the logout button can be done so by importing the component/logoutbutton.tsx to your page.
 
-INSERT INTO users (first_name, last_name, email, student_id, password, permission_level) VALUES ('Example', 'User', 'example.user@torontomu.ca', '111111111', 'password123', 0);
-INSERT INTO users (first_name, last_name, email, student_id, password, permission_level) VALUES ('Example', 'User2', 'example.user2@torontomu.ca', '111111112', 'password456', 0);
+The authentication and user data are managed by cookies. Read in the cookie data:
+const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string;
+      studentId: string;
+      email: string;
+      role: Role;
+    };
+
+Roles are organized:
+Role {
+    TEST = 0,
+    STUDENT = 1,
+    CLUBLEADER = 2,
+    DEPARTMENTADMIN = 3,
+    SYSTEMADMIN = 4,
+}
+
+Please look at dashboard_test for implementation
 ```

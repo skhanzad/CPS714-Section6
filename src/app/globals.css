@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #000000;
+    --background: #0b0b0e;
+    --foreground: #e5e5e5;
+    --card-bg: rgba(17, 18, 22, 0.6);
+    --card-border: #2a2a2f;
+    --blue: #3b82f6;
   }
 }
 
 body {
-  background: var(--background);
+  @apply min-h-screen flex items-center justify-center font-sans antialiased;
+  padding: 1rem;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  background-image: radial-gradient(
+    1200px 800px at 50% -10%,
+    #0f172a 0%,
+    rgba(0, 0, 0, 0) 60%
+  );
+}
+
+.card {
+  @apply rounded-2xl p-8 border;
+  background: var(--card-bg);
+  border-color: var(--card-border);
+  backdrop-filter: blur(6px);
+  max-width: 42rem;
+  width: 100%;
+  margin: 2rem auto;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.12);
+}
+
+.btn {
+  @apply inline-flex items-center justify-center w-full py-2.5 rounded-lg font-medium transition-colors duration-200;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+.btn-primary:hover {
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+}
+
+.btn-secondary {
+  @apply bg-zinc-800 text-white hover:bg-zinc-700;
+}
+.btn-secondary:hover {
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
 }

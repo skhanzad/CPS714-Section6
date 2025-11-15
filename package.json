@@ -13,6 +13,7 @@
     "test:verbose": "jest --verbose"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "jsonwebtoken": "^9.0.2",
     "next": "16.0.1",
     "pg": "^8.16.3",

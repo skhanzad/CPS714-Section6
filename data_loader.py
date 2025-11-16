@@ -1,9 +1,6 @@
-"""
-Data loading module for the Organizer Analytics Dashboard.
-
-This module handles loading data from CSV files or PostgreSQL database
-with comprehensive error handling and validation.
-"""
+# Data loading module
+# Handles loading data from either CSV files or PostgreSQL database
+# Has validation and error handling built in
 
 import pandas as pd
 import psycopg2
@@ -22,31 +19,30 @@ from config import (
     ERROR_MESSAGES
 )
 
-# Configure logging
+# ==========================================================
+# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
+# ===================================================
+# Custom exception
+# 
 class DataLoadError(Exception):
-    """Custom exception for data loading errors."""
+    """Custom exception for when data loading fails."""
     pass
 
 
+# ===============================
+# Validation helper
 def validate_dataframe(df: pd.DataFrame, required_columns: list, data_type: str) -> None:
     """
-    Validate that a DataFrame contains required columns and is not empty.
-    
-    Args:
-        df: DataFrame to validate
-        required_columns: List of required column names
-        data_type: Type of data being validated (for error messages)
-    
-    Raises:
-        DataLoadError: If validation fails
+    Checks that a dataframe has the required columns and isn't empty.
+    Raises DataLoadError if validation fails.
     """
     if df.empty:
         raise DataLoadError(f"{ERROR_MESSAGES['empty_data']} {data_type} dataset is empty.")
     
+    # Check for missing columns
     missing_columns = [col for col in required_columns if col not in df.columns]
     if missing_columns:
         raise DataLoadError(
@@ -54,32 +50,27 @@ def validate_dataframe(df: pd.DataFrame, required_columns: list, data_type: str)
         )
 
 
+# CSV loading functions
 def load_events_from_csv(file_path: str) -> pd.DataFrame:
     """
-    Load events data from CSV file.
-    
-    Args:
-        file_path: Path to the events CSV file
-    
-    Returns:
-        DataFrame containing events data
-    
-    Raises:
-        DataLoadError: If file cannot be loaded or is invalid
+    Loads events data from a CSV file.
+    Validates the data and returns a dataframe.
     """
     try:
         events_df = pd.read_csv(file_path)
         validate_dataframe(events_df, ["event_name", "rsvp_count", "actual_attendance"], "Events")
         
-        # Validate data types and values
         if not pd.api.types.is_numeric_dtype(events_df["rsvp_count"]):
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} RSVP count must be numeric.")
         if not pd.api.types.is_numeric_dtype(events_df["actual_attendance"]):
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Actual attendance must be numeric.")
+        
+        # Check for negative values
         if (events_df["rsvp_count"] < 0).any():
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} RSVP count cannot be negative.")
         if (events_df["actual_attendance"] < 0).any():
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Actual attendance cannot be negative.")
+        
         if (events_df["actual_attendance"] > events_df["rsvp_count"]).any():
             logger.warning("Some events have actual attendance greater than RSVP count.")
         
@@ -96,26 +87,19 @@ def load_events_from_csv(file_path: str) -> pd.DataFrame:
 
 def load_feedback_from_csv(file_path: str) -> pd.DataFrame:
     """
-    Load feedback data from CSV file.
-    
-    Args:
-        file_path: Path to the feedback CSV file
-    
-    Returns:
-        DataFrame containing feedback data
-    
-    Raises:
-        DataLoadError: If file cannot be loaded or is invalid
+    Loads feedback data from CSV.
+    Validates ratings are between 1-5 and counts are non-negative.
     """
     try:
         feedback_df = pd.read_csv(file_path)
         validate_dataframe(feedback_df, ["event_name", "avg_rating", "feedback_count"], "Feedback")
         
-        # Validate data types and values
         if not pd.api.types.is_numeric_dtype(feedback_df["avg_rating"]):
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Average rating must be numeric.")
         if not pd.api.types.is_numeric_dtype(feedback_df["feedback_count"]):
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Feedback count must be numeric.")
+        
+        # Ratings should be 1-5
         if ((feedback_df["avg_rating"] < 1) | (feedback_df["avg_rating"] > 5)).any():
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Ratings must be between 1 and 5.")
         if (feedback_df["feedback_count"] < 0).any():
@@ -134,22 +118,13 @@ def load_feedback_from_csv(file_path: str) -> pd.DataFrame:
 
 def load_audience_from_csv(file_path: str) -> pd.DataFrame:
     """
-    Load audience data from CSV file.
-    
-    Args:
-        file_path: Path to the audience CSV file
-    
-    Returns:
-        DataFrame containing audience data
-    
-    Raises:
-        DataLoadError: If file cannot be loaded or is invalid
+    Loads audience data from CSV.
+    Just checks that student counts are numeric and non-negative.
     """
     try:
         audience_df = pd.read_csv(file_path)
         validate_dataframe(audience_df, ["college", "major", "students"], "Audience")
         
-        # Validate data types and values
         if not pd.api.types.is_numeric_dtype(audience_df["students"]):
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Student count must be numeric.")
         if (audience_df["students"] < 0).any():
@@ -166,15 +141,11 @@ def load_audience_from_csv(file_path: str) -> pd.DataFrame:
         raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Error loading audience: {str(e)}")
 
 
+
 def get_database_connection() -> psycopg2.extensions.connection:
     """
-    Create a connection to the PostgreSQL database.
-    
-    Returns:
-        Database connection object
-    
-    Raises:
-        DataLoadError: If connection cannot be established
+    Creates a connection to PostgreSQL.
+    Returns the connection object or raises DataLoadError.
     """
     try:
         conn = psycopg2.connect(**DATABASE_CONFIG)
@@ -188,16 +159,7 @@ def get_database_connection() -> psycopg2.extensions.connection:
 
 def load_events_from_database(connection: psycopg2.extensions.connection) -> pd.DataFrame:
     """
-    Load events data from PostgreSQL database.
-    
-    Args:
-        connection: Database connection object
-    
-    Returns:
-        DataFrame containing events data
-    
-    Raises:
-        DataLoadError: If query fails or data is invalid
+    Loads events from the database using the configured query.
     """
     try:
         events_df = pd.read_sql(EVENTS_QUERY, connection)
@@ -210,16 +172,8 @@ def load_events_from_database(connection: psycopg2.extensions.connection) -> pd.
 
 def load_feedback_from_database(connection: psycopg2.extensions.connection) -> pd.DataFrame:
     """
-    Load feedback data from PostgreSQL database.
-    
-    Args:
-        connection: Database connection object
-    
-    Returns:
-        DataFrame containing feedback data, or empty DataFrame if table/view doesn't exist
-    
-    Raises:
-        DataLoadError: If query fails (except for missing table/view)
+    Loads feedback from database.
+    Returns empty dataframe if table/view doesn't exist (graceful degradation).
     """
     try:
         feedback_df = pd.read_sql(FEEDBACK_QUERY, connection)
@@ -228,10 +182,8 @@ def load_feedback_from_database(connection: psycopg2.extensions.connection) -> p
         return feedback_df
     except Exception as e:
         error_str = str(e)
-        # Check if the error is due to missing table/view
         if "does not exist" in error_str or "relation" in error_str.lower():
             logger.warning(f"Feedback table/view not found in database. Returning empty DataFrame. Error: {error_str}")
-            # Return empty DataFrame with expected columns
             empty_df = pd.DataFrame(columns=["event_name", "avg_rating", "feedback_count"])
             logger.info("Returning empty feedback DataFrame (table/view not available).")
             return empty_df
@@ -240,16 +192,8 @@ def load_feedback_from_database(connection: psycopg2.extensions.connection) -> p
 
 def load_audience_from_database(connection: psycopg2.extensions.connection) -> pd.DataFrame:
     """
-    Load audience data from PostgreSQL database.
-    
-    Args:
-        connection: Database connection object
-    
-    Returns:
-        DataFrame containing audience data, or empty DataFrame if table/view doesn't exist
-    
-    Raises:
-        DataLoadError: If query fails (except for missing table/view)
+    Loads audience data from database.
+    Returns empty dataframe if table/view doesn't exist.
     """
     try:
         audience_df = pd.read_sql(AUDIENCE_QUERY, connection)
@@ -258,32 +202,31 @@ def load_audience_from_database(connection: psycopg2.extensions.connection) -> p
         return audience_df
     except Exception as e:
         error_str = str(e)
-        # Check if the error is due to missing table/view
+        # Handle missing table gracefully
         if "does not exist" in error_str or "relation" in error_str.lower():
             logger.warning(f"Audience table/view not found in database. Returning empty DataFrame. Error: {error_str}")
-            # Return empty DataFrame with expected columns
             empty_df = pd.DataFrame(columns=["college", "major", "students"])
             logger.info("Returning empty audience DataFrame (table/view not available).")
             return empty_df
         raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading audience: {error_str}")
 
 
+# ====================
+# Main loading function
 def load_all_data() -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
-    Load all data from CSV files or database based on configuration.
-    
-    Returns:
-        Tuple of (events_df, feedback_df, audience_df)
-    
-    Raises:
-        DataLoadError: If any data cannot be loaded
+    Main function to load all data.
+    Uses CSV files if DUMMY_MODE is True, otherwise uses database.
+    Returns tuple of (events_df, feedback_df, audience_df).
     """
     try:
         if DUMMY_MODE:
+            # Load from CSV files
             events_df = load_events_from_csv(EVENTS_CSV_PATH)
             feedback_df = load_feedback_from_csv(FEEDBACK_CSV_PATH)
             audience_df = load_audience_from_csv(AUDIENCE_CSV_PATH)
         else:
+            # Load from database
             connection = get_database_connection()
             try:
                 events_df = load_events_from_database(connection)

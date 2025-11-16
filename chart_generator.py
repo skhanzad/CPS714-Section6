@@ -1,9 +1,12 @@
-"""
-Chart generation module for the Organizer Analytics Dashboard.
+# ============================================================================
+# Chart generation functions
+# ============================================================================
+# All the chart creation logic is here here 
 
-This module provides reusable functions for creating various charts and visualizations
-with consistent styling and error handling.
-"""
+
+
+
+
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -20,23 +23,27 @@ from config import (
 )
 
 
+
+
+
+
+
+
+
+# ============================================================================
+# RSVP vs Attendance comparison chart
 def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figure:
     """
-    Create a grouped bar chart comparing RSVP count and actual attendance.
-    
-    Args:
-        events_df: DataFrame containing event data with event_name, rsvp_count, and actual_attendance
-    
-    Returns:
-        Plotly Figure object
+    Creates a grouped bar chart showing RSVP count vs actual attendance.
+    Takes events dataframe and returns a Plotly figure.
     """
     figure = go.Figure()
     
-    # Calculate max value for y-axis padding
+
     max_value = max(events_df["rsvp_count"].max(), events_df["actual_attendance"].max())
-    yaxis_max = max_value * 1.15  # Add 15% padding above max value
+    yaxis_max = max_value * 1.15  
     
-    # Add RSVP Count bar
+    # Add the RSVP bars
     figure.add_trace(go.Bar(
         name="RSVP Count",
         x=events_df["event_name"],
@@ -47,7 +54,9 @@ def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figur
         hovertemplate="<b>%{x}</b><br>RSVP Count: %{y}<extra></extra>"
     ))
     
-    # Add Actual Attendance bar
+
+
+    # Add the actual attendance bars
     figure.add_trace(go.Bar(
         name="Actual Attendance",
         x=events_df["event_name"],
@@ -58,7 +67,9 @@ def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figur
         hovertemplate="<b>%{x}</b><br>Actual Attendance: %{y}<extra></extra>"
     ))
     
-    # Update layout
+
+
+    # Style the chart
     figure.update_layout(
         title="Event Performance: RSVP vs Actual Attendance",
         xaxis_title="Event Name",
@@ -71,31 +82,35 @@ def create_rsvp_attendance_comparison_chart(events_df: pd.DataFrame) -> go.Figur
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         height=CHART_HEIGHT_PERFORMANCE,
         hovermode="closest",
-        margin=dict(t=120, b=50, l=50, r=50)  # Increased top margin to prevent text cutoff
+        margin=dict(t=120, b=50, l=50, r=50)  # Extra top margin for title
     )
     
     return figure
 
 
+
+
+
+
+
+# ==========================================
+# Attendance rate chart
+# =======
 def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
     """
-    Create a bar chart showing attendance rates for each event.
-    
-    Args:
-        events_df: DataFrame containing event data with event_name and attendance_rate
-    
-    Returns:
-        Plotly Figure object
+    Bar chart showing attendance rates per event.
+    Uses a blue color scale to show higher rates.
     """
-    # Get min and max attendance rates for color scale
+    
     min_rate = events_df["attendance_rate"].min()
     max_rate = events_df["attendance_rate"].max()
     
-    # Calculate y-axis max with padding for text
-    yaxis_max = max(100, max_rate * 1.15)  # Add 15% padding, but at least go to 100%
+
+    #########################
+    # Set y-axis max with some padding
+    yaxis_max = max(100, max_rate * 1.15)  #######
     
-    # Use a color scale that doesn't start with white
-    # Using a custom blue scale that starts from a darker blue
+
     figure = px.bar(
         events_df,
         x="event_name",
@@ -103,11 +118,13 @@ def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
         title="Attendance Rate (%)",
         text=events_df["attendance_rate"].apply(lambda x: f"{x}%"),
         color="attendance_rate",
-        color_continuous_scale=[[0, "#4a90e2"], [1, "#1e3a8a"]],  # Darker blue to darkest blue
+        color_continuous_scale=[[0, "#4a90e2"], [1, "#1e3a8a"]],  # Blue gradient
         range_color=[min_rate, max_rate],
         labels={"attendance_rate": "Attendance Rate (%)", "event_name": "Event Name"}
     )
     
+    #####styling
+
     figure.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -116,7 +133,7 @@ def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
         yaxis=dict(range=[0, yaxis_max]),
         showlegend=False,
         hovermode="closest",
-        margin=dict(t=120, b=50, l=50, r=50)  # Increased top margin to prevent text cutoff
+        margin=dict(t=120, b=50, l=50, r=50)
     )
     
     figure.update_traces(
@@ -127,31 +144,40 @@ def create_attendance_rate_chart(events_df: pd.DataFrame) -> go.Figure:
     return figure
 
 
+
+
+
+
+
+
+
+
+# Feedback rating chart
 def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
     """
-    Create a bar chart showing average feedback ratings per event.
-    
-    Args:
-        feedback_df: DataFrame containing feedback data with event_name and avg_rating
-    
-    Returns:
-        Plotly Figure object
+    Shows average feedback ratings for each event.
+    Uses yellow-orange-red color scale (YlOrRd) from Plotly.
     """
-    # Calculate y-axis max with padding for text
-    max_rating = feedback_df["avg_rating"].max()
-    yaxis_max = max(5, max_rating * 1.15)  # Add 15% padding, but at least go to 5
     
+    max_rating = feedback_df["avg_rating"].max()
+    yaxis_max = max(5, max_rating * 1.15)  
+    
+    # Create the chart
     figure = px.bar(
         feedback_df,
         x="event_name",
         y="avg_rating",
         color="avg_rating",
-        color_continuous_scale="YlOrRd",
+        color_continuous_scale="YlOrRd",  
         title="Average Feedback Rating per Event (1–5)",
         text=feedback_df["avg_rating"].round(1),
         labels={"avg_rating": "Average Rating", "event_name": "Event Name"}
     )
     
+   
+
+
+
     figure.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -160,7 +186,7 @@ def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
         yaxis=dict(range=[0, yaxis_max]),
         showlegend=False,
         hovermode="closest",
-        margin=dict(t=120, b=50, l=50, r=50)  # Increased top margin to prevent text cutoff
+        margin=dict(t=120, b=50, l=50, r=50)
     )
     
     figure.update_traces(
@@ -171,24 +197,31 @@ def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
     return figure
 
 
+
+
+
+
+
+
+
+
+# Audience by college pie chart
 def create_audience_college_pie_chart(audience_by_college_df: pd.DataFrame) -> go.Figure:
     """
-    Create a pie chart showing audience distribution by college.
-    
-    Args:
-        audience_by_college_df: DataFrame containing college and students columns
-    
-    Returns:
-        Plotly Figure object
+    Pie chart showing how students are distributed across colleges.
     """
     figure = px.pie(
         audience_by_college_df,
         names="college",
         values="students",
         title="Audience Distribution by College",
-        color_discrete_sequence=px.colors.qualitative.Set3
+        color_discrete_sequence=px.colors.qualitative.Set3  
     )
+
+
+
     
+    # Show percentage and label inside the slices
     figure.update_traces(
         textposition="inside",
         textinfo="percent+label",
@@ -206,27 +239,32 @@ def create_audience_college_pie_chart(audience_by_college_df: pd.DataFrame) -> g
     return figure
 
 
+
+###########################################################################
+##################################################
+#########################
+# ========================#########################=========####======
+
+
+
+# Audience by major bar chart
 def create_audience_major_bar_chart(audience_by_major_df: pd.DataFrame) -> go.Figure:
     """
-    Create a horizontal bar chart showing audience distribution by major.
-    
-    Args:
-        audience_by_major_df: DataFrame containing major, students, and college columns
-    
-    Returns:
-        Plotly Figure object
+    Horizontal bar chart showing student distribution by major.
+    Color-coded by college so you can see which majors belong to which college.
     """
     figure = px.bar(
         audience_by_major_df,
         x="students",
         y="major",
         color="college",
-        orientation="h",
+        orientation="h",  
         title="Audience Distribution by Major",
         labels={"students": "Number of Students", "major": "Major", "college": "College"},
         color_discrete_sequence=px.colors.qualitative.Set3
     )
     
+    # Sort by total students ascending (smallest at top)
     figure.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -235,6 +273,7 @@ def create_audience_major_bar_chart(audience_by_major_df: pd.DataFrame) -> go.Fi
         yaxis={"categoryorder": "total ascending"},
         hovermode="closest"
     )
+    
     
     figure.update_traces(
         hovertemplate="<b>%{y}</b><br>College: %{customdata[0]}<br>Students: %{x}<extra></extra>",

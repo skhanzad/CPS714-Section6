@@ -1,9 +1,16 @@
-"""
-Main application module for the Organizer Analytics Dashboard.
+# ===========================================
+# Main app file - handles the dashboard setup and routing
+# =====================================================
+# This is where everything comes together
+# Dash app, callbacks, data load
 
-This module initializes the Dash application, sets up callbacks, and
-handles the overall application flow with comprehensive error handling.
-"""
+
+
+
+
+
+
+
 
 import dash
 from dash import dcc, html, Input, Output
@@ -12,6 +19,14 @@ import webbrowser
 from threading import Timer
 import logging
 
+
+
+
+
+
+
+# Imports from our modules
+# =============================================
 from config import (
     APP_TITLE,
     APP_DESCRIPTION,
@@ -20,6 +35,10 @@ from config import (
     DEBUG_MODE,
     ERROR_MESSAGES
 )
+
+
+
+
 
 from data_loader import load_all_data, DataLoadError
 from data_processor import (
@@ -31,6 +50,8 @@ from data_processor import (
     prepare_audience_by_major,
     DataProcessingError
 )
+
+
 from chart_generator import (
     create_rsvp_attendance_comparison_chart,
     create_attendance_rate_chart,
@@ -38,6 +59,8 @@ from chart_generator import (
     create_audience_college_pie_chart,
     create_audience_major_bar_chart
 )
+
+
 from ui_components import (
     create_header,
     create_statistics_row,
@@ -50,29 +73,48 @@ from ui_components import (
     create_error_message
 )
 
-# Configure logging
+
+
+
+
+
+
+# Logging setup
+# ===========================================
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Initialize Dash application
+
+
+
+
+
+# ===============================================================
+# Initialize the Dash app
 app = dash.Dash(__name__)
 app.title = APP_TITLE
 
-# Configure server to allow iframe embedding
-# Remove X-Frame-Options header to allow embedding in iframes
+
+
+
+# ============================================================================
+# CORS and iframe stuf
+
 @app.server.after_request
 def remove_xframe_options(response):
     response.headers.pop('X-Frame-Options', None)
-    # Add CORS headers to allow cross-origin requests
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     return response
 
-# Handle OPTIONS requests for CORS preflight
+
+
+
+
 @app.server.before_request
 def handle_preflight():
     if request.method == "OPTIONS":
@@ -82,7 +124,12 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Methods', "*")
         return response
 
-# Global variables to store loaded data
+
+
+
+#====
+# Global data storage
+# =====================================================
 events_df = None
 feedback_df = None
 audience_df = None
@@ -93,19 +140,23 @@ audience_by_college_df = None
 audience_by_major_df = None
 error_message = None
 
+####################################################################################################
 
+
+# =========================
+# Chart initialization
+# ======================================================
 def initialize_charts():
     """
-    Initialize all charts with current data.
-    
-    Returns:
-        Dictionary containing chart figures
+    Creates all the charts we need for the dashboard.
+    Returns a dict with all the chart figures.
     """
     global events_with_rates_df, feedback_df
     global audience_by_college_df, audience_by_major_df
     
     charts = {}
     
+    # Only create charts if we have data
     if events_with_rates_df is not None and not events_with_rates_df.empty:
         charts["rsvp_attendance"] = create_rsvp_attendance_comparison_chart(events_with_rates_df)
         charts["attendance_rate"] = create_attendance_rate_chart(events_with_rates_df)
@@ -122,12 +173,16 @@ def initialize_charts():
     return charts
 
 
+
+
+
+# ==========================================================
+# Data loading and processing
+# ==============================================
 def load_and_process_data():
     """
-    Load and process all data for the dashboard.
-    
-    Returns:
-        tuple: (success: bool, error_message: str or None)
+    Loads all the data and processes it for the dashboard.
+    Returns (success, error_message) tuple.
     """
     global events_df, feedback_df, audience_df
     global events_with_rates_df, statistics
@@ -135,19 +190,19 @@ def load_and_process_data():
     global error_message
     
     try:
-        # Load data
+        # Load the raw data first
         events_df, feedback_df, audience_df = load_all_data()
         
-        # Process events data
+        # Calculate attendance rates for events
         events_with_rates_df = calculate_attendance_rate(events_df)
         
-        # Calculate statistics
+        # Get summary stats
         statistics = calculate_summary_statistics(events_df, feedback_df, audience_df)
         
-        # Parse comments
+        # Extract comments from feedback
         comments_by_event = parse_event_comments(feedback_df)
         
-        # Prepare audience data
+        # Group audience data by college and major
         audience_by_college_df = prepare_audience_by_college(audience_df)
         audience_by_major_df = prepare_audience_by_major(audience_df)
         
@@ -165,13 +220,22 @@ def load_and_process_data():
         return False, error_message
 
 
+
+
+
+
+#########################
+#########################
+#########################
+
+# ====================================================
+# Dashboard layout creation
 def create_dashboard_layout():
     """
-    Create the main dashboard layout.
-    
-    Returns:
-        HTML Div containing the dashboard layout
+    Builds the main dashboard layout with all sections.
+    Returns the HTML structure for the dashboard.
     """
+    # Show error if something went wrong
     if error_message:
         return html.Div([
             create_header(),
@@ -184,27 +248,35 @@ def create_dashboard_layout():
             "fontFamily": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
         })
     
-    # Get event names for dropdown
+
+
+
+    # Get list of events that have comments
     event_names = list(comments_by_event.keys()) if comments_by_event else []
     
-    # Initialize charts
+    # Create all the charts
     charts = initialize_charts()
     
-    # Get initial comments for first event (if available)
+    # Set up initial comments display
     initial_comments = []
     initial_event_name = "No Event Selected"
     if event_names and comments_by_event:
         initial_event_name = event_names[0]
         initial_comments = get_comments_for_event(comments_by_event, initial_event_name)
     
+    # Build the full dashboard layout
     return html.Div([
-        # Header
+        # Top header
         create_header(),
         
-        # Summary Statistics
+        # Stats cards at the top
         create_statistics_row(statistics),
         
-        # Event Performance Reports Section
+
+        #########################
+        # ----------------------------------------
+        # Event Performance section
+
         create_section_container([
             create_section_header("Event Performance Reports", "#3498db"),
             create_events_performance_table(events_with_rates_df),
@@ -223,7 +295,10 @@ def create_dashboard_layout():
             ], style={"marginBottom": "30px"})
         ]),
         
-        # Feedback Summary Section
+
+        #########################
+        # ----------------------------------------
+        # Feedback section
         create_section_container([
             create_section_header("Feedback Summary", "#e74c3c"),
             dcc.Graph(
@@ -233,7 +308,10 @@ def create_dashboard_layout():
             create_event_comments_dropdown(event_names, initial_comments, initial_event_name)
         ]),
         
-        # Audience Insights Section
+
+        #############################################################################################################################
+        # ----------------------------------------
+        # Audience section
         create_section_container([
             create_section_header("Audience Insights", "#9b59b6"),
             html.Div([
@@ -262,54 +340,77 @@ def create_dashboard_layout():
     })
 
 
-# Set up layout
+
+
+#########################
+#########################
+# ======================================
+# Load data and set up layout
+# 
 success, error = load_and_process_data()
 app.layout = create_dashboard_layout()
 
-
-# Callback for updating comments display based on dropdown selection
+#########################
+#########################
+#########################
+# ==================================================
+# Callbacks
+# 
 @app.callback(
     Output("comments-display-container", "children"),
     Input("event-comments-dropdown", "value")
 )
 def update_comments_display(selected_event):
     """
-    Update the comments display when a different event is selected.
-    
-    Args:
-        selected_event: Name of the selected event (can be None)
-    
-    Returns:
-        HTML Div containing the comments for the selected event
+    Updates the comments section when user picks a different event.
     """
     global comments_by_event
     
-    # Handle case when no event is selected or no comments available
+    # Handle empty selection
     if not selected_event or selected_event is None:
         return create_comments_display([], "No Event Selected")
     
     if not comments_by_event:
         return create_comments_display([], "No Comments Available")
     
-    # Get comments for the selected event
+    # Get the comments for this event
     comments = get_comments_for_event(comments_by_event, selected_event)
     return create_comments_display(comments, selected_event)
 
 
+
+
+
+# =================================================
+# Browser opening helper
+# ==========================================================
 def open_browser():
-    """Open the web browser to the dashboard URL."""
+    """Opens browser to the dashboard URL."""
     try:
-        # Use localhost for browser URL even though server listens on 0.0.0.0
+        # Use localhost even though server listens on 0.0.0.0
         webbrowser.open_new(f"http://localhost:{DEFAULT_PORT}/")
     except Exception as e:
         logger.warning(f"Could not open browser automatically: {str(e)}")
 
 
+#########################
+#########################
+#########################
+#########################
+
+
+
+
+
+
+# ====================================================================
+# Main entry point
+###########
 if __name__ == "__main__":
     if success:
         logger.info(f"Starting {APP_TITLE} on http://{DEFAULT_HOST}:{DEFAULT_PORT}")
         logger.info(f"Dashboard will be available at: http://localhost:{DEFAULT_PORT}")
-        # Only open browser in the actual server process (reloader child), not the parent process
+        # Only open browser in the actual server process, not the parent
         import os
         if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not DEBUG_MODE:
             Timer(1, open_browser).start()
@@ -319,5 +420,5 @@ if __name__ == "__main__":
         logger.error("Starting server anyway to display error message...")
         logger.info(f"Starting {APP_TITLE} on http://{DEFAULT_HOST}:{DEFAULT_PORT}")
         logger.info(f"Dashboard will be available at: http://localhost:{DEFAULT_PORT}")
-        # Start server even with errors so user can see the error message
+        # Start server even with errors so user can see what went wrong
         app.run(debug=DEBUG_MODE, host=DEFAULT_HOST, port=DEFAULT_PORT, use_reloader=DEBUG_MODE)

@@ -1,9 +1,8 @@
-"""
-UI components module for the Organizer Analytics Dashboard.
-
-This module provides reusable UI components with consistent styling
-and structure for building the dashboard interface.
-"""
+# ============================================================================
+# UI components module
+# ============================================================================
+# All the reusable UI components for the dashboard
+# Keeps styling consistent and makes the code cleaner
 
 from dash import html, dcc
 from typing import List, Dict
@@ -12,12 +11,12 @@ import pandas as pd
 from config import COLORS, APP_TITLE, APP_DESCRIPTION
 
 
+# ============================================================================
+# Header component
+# ============================================================================
 def create_header() -> html.Div:
     """
-    Create the dashboard header component.
-    
-    Returns:
-        HTML Div containing the header
+    Creates the dashboard header with title and description.
     """
     return html.Div([
         html.H1(
@@ -46,17 +45,13 @@ def create_header() -> html.Div:
     })
 
 
+# ============================================================================
+# Statistics cards
+# ============================================================================
 def create_statistics_card(value: str, label: str, color: str) -> html.Div:
     """
-    Create a statistics card component.
-    
-    Args:
-        value: The statistic value to display
-        label: The label for the statistic
-        color: The color theme for the card
-    
-    Returns:
-        HTML Div containing the statistics card
+    Creates a single stat card with a value and label.
+    Used for the summary stats at the top of the dashboard.
     """
     return html.Div([
         html.H3(
@@ -89,13 +84,8 @@ def create_statistics_card(value: str, label: str, color: str) -> html.Div:
 
 def create_statistics_row(statistics: Dict[str, float]) -> html.Div:
     """
-    Create a row of statistics cards.
-    
-    Args:
-        statistics: Dictionary containing statistic values
-    
-    Returns:
-        HTML Div containing statistics cards
+    Creates a row of stat cards for the top of the dashboard.
+    Shows total RSVPs, attendance, attendance rate, and avg rating.
     """
     return html.Div([
         create_statistics_card(
@@ -125,16 +115,13 @@ def create_statistics_row(statistics: Dict[str, float]) -> html.Div:
     })
 
 
+# ============================================================================
+# Section headers
+# ============================================================================
 def create_section_header(title: str, border_color: str) -> html.H2:
     """
-    Create a section header with colored left border.
-    
-    Args:
-        title: The section title
-        border_color: The color for the left border
-    
-    Returns:
-        HTML H2 element containing the section header
+    Creates a section header with a colored left border.
+    Used to separate different sections of the dashboard.
     """
     return html.H2(
         title,
@@ -148,15 +135,13 @@ def create_section_header(title: str, border_color: str) -> html.H2:
     )
 
 
+# ============================================================================
+# Tables
+# ============================================================================
 def create_events_performance_table(events_df: pd.DataFrame) -> html.Div:
     """
-    Create a table displaying event performance metrics.
-    
-    Args:
-        events_df: DataFrame containing event performance data
-    
-    Returns:
-        HTML Div containing the performance table
+    Creates a table showing event performance metrics.
+    Displays event name, RSVP count, actual attendance, and attendance rate.
     """
     table_rows = [
         html.Tr([
@@ -257,19 +242,15 @@ def create_events_performance_table(events_df: pd.DataFrame) -> html.Div:
     ], style={"marginBottom": "30px"})
 
 
+# ============================================================================
+# Comments dropdown
+# ============================================================================
 def create_event_comments_dropdown(event_names: List[str], initial_comments: List[str] = None, initial_event_name: str = None) -> html.Div:
     """
-    Create a dropdown menu for selecting events to view comments.
-    
-    Args:
-        event_names: List of event names to include in dropdown
-        initial_comments: Initial comments to display
-        initial_event_name: Initial event name to display
-    
-    Returns:
-        HTML Div containing the dropdown component
+    Creates a dropdown to select which event's comments to view.
+    Includes the dropdown and the display area for comments.
     """
-    # Always include the components with IDs for callbacks, even when empty
+    # Need to include components with IDs even when empty (for callbacks)
     if not event_names:
         return html.Div([
             html.H3(
@@ -289,7 +270,7 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
                     "fontStyle": "italic"
                 }
             ),
-            # Include dropdown with empty options (hidden but present for callbacks)
+            # Dropdown with empty options (hidden but needed for callbacks)
             dcc.Dropdown(
                 id="event-comments-dropdown",
                 options=[],
@@ -302,7 +283,7 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
                     "display": "none"  # Hide when empty
                 }
             ),
-            # Always include the container for callbacks
+            # Container for comments (needed for callbacks)
             html.Div(
                 id="comments-display-container",
                 children=create_comments_display(
@@ -350,16 +331,13 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
     ], style={"marginTop": "30px"})
 
 
+# ============================================================================
+# Comments display
+# ============================================================================
 def create_comments_display(comments: List[str], event_name: str) -> html.Div:
     """
-    Create a display component for event comments.
-    
-    Args:
-        comments: List of comment strings
-        event_name: Name of the event
-    
-    Returns:
-        HTML Div containing the comments display
+    Creates the display area for event comments.
+    Shows each comment in a styled box.
     """
     if not comments:
         return html.Div([
@@ -412,16 +390,13 @@ def create_comments_display(comments: List[str], event_name: str) -> html.Div:
     ])
 
 
+# ============================================================================
+# Audience breakdown table
+# ============================================================================
 def create_audience_breakdown_table(audience_df: pd.DataFrame, total_students: int) -> html.Div:
     """
-    Create a table displaying detailed audience breakdown.
-    
-    Args:
-        audience_df: DataFrame containing audience data
-        total_students: Total number of students for percentage calculation
-    
-    Returns:
-        HTML Div containing the audience breakdown table
+    Creates a detailed table showing audience breakdown by college and major.
+    Includes student counts and percentages.
     """
     table_rows = [
         html.Tr([
@@ -531,16 +506,13 @@ def create_audience_breakdown_table(audience_df: pd.DataFrame, total_students: i
     ])
 
 
+# ============================================================================
+# Section container
+# ============================================================================
 def create_section_container(children: List, background_color: str = COLORS["white"]) -> html.Div:
     """
-    Create a styled container for a section.
-    
-    Args:
-        children: List of child components
-        background_color: Background color for the container
-    
-    Returns:
-        HTML Div containing the section
+    Creates a styled container for dashboard sections.
+    Adds padding, rounded corners, and shadow.
     """
     return html.Div(
         children,
@@ -554,15 +526,13 @@ def create_section_container(children: List, background_color: str = COLORS["whi
     )
 
 
+# ============================================================================
+# Error message component
+# ============================================================================
 def create_error_message(message: str) -> html.Div:
     """
-    Create an error message component.
-    
-    Args:
-        message: Error message to display
-    
-    Returns:
-        HTML Div containing the error message
+    Creates an error message display component.
+    Shows when data loading or processing fails.
     """
     return html.Div([
         html.H3(

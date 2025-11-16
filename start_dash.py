@@ -1,26 +1,37 @@
 #!/usr/bin/env python3
-"""
-Helper script to start the Dash analytics dashboard.
-This script provides better error handling and instructions.
-"""
+# Dashboard startup script
+# Just run: python start_dash.py
 
 import sys
 import subprocess
 
+# Main startup function
+# ============================================================
+
+
+
 def main():
-    """Main function to start the Dash app."""
+    """Starts the Dash app with some basic checks."""
     print("=" * 60)
     print("Starting Organizer Analytics Dashboard")
     print("=" * 60)
     print()
     
-    # Check Python version
+    # Check Python version first
     if sys.version_info < (3, 7):
         print("ERROR: Python 3.7 or higher is required.")
         print(f"Current version: {sys.version}")
         sys.exit(1)
     
-    # Check dependencies
+
+
+
+
+
+
+
+
+
     try:
         import dash
         import pandas
@@ -37,9 +48,17 @@ def main():
     print("Press Ctrl+C to stop the server.")
     print()
     
-    # Run the app directly
+
+
+
+
+
+
+
+
+
+    # Import and start the app
     try:
-        # Import and run app.py
         import app
     except KeyboardInterrupt:
         print("\n\nServer stopped by user.")
@@ -53,6 +72,15 @@ def main():
         print("  4. Check data files exist in ./data/ directory")
         print("  5. Review error messages above for specific issues")
         sys.exit(1)
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     main()

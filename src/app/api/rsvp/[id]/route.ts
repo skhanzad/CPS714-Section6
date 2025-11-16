@@ -41,11 +41,25 @@ export async function POST(req: Request, context: any) {
 
 
         // basically, this is to now update the rsvp table, so that we have an entry of the user wanting to go the the event
-        await db.query(
-            `INSERT INTO rsvps (user_id, event_id, status)
-             VALUES ($1, $2, $3)`,
-            [userId, eventId, status]
-        );
+        try {
+            await db.query(
+                `INSERT INTO rsvps (user_id, event_id, status)
+                VALUES ($1, $2, $3)`,
+                [userId, eventId, status]
+            );
+        } catch (e: any) {
+            if (e.code === "23505") { // unique constraint violation code
+                return NextResponse.json(
+                    { error: "User has already RSVP’d to this event" },
+                    { status: 400 }
+                );
+            }
+            console.error(e);
+            return NextResponse.json(
+                { error: "Database error" },
+                { status: 500 }
+            );
+        }
 
         if (status == "RSVP"){ // ONCE AGAIN, if its a limited capacity event, we also need to update the events table, to update the rsvp_count because someone has just rsvpd
             await db.query(

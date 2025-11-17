@@ -6,6 +6,12 @@ export const usersTable = pgTable("users", {
 
 export const eventsTable = pgTable("events", {
   id: uuid("id").defaultRandom().primaryKey(),
+  eventName: text("event_name").notNull(),
+  eventDate: text("event_date").notNull(),
+  location: text("location").notNull(),
+  capacity: integer("capacity"), // NULL = unlimited
+  rsvpCount: integer("rsvp_count").default(0),
+  actualAttendance: integer("actual_attendance").default(0)
 });
 
 export const rewardsProfilesTable = pgTable("rewards_profile", {

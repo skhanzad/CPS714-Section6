@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 import { cookies } from "next/headers";
 import { Role } from "@/auth/User";
+import Link from "next/link";
 import LogoutButton from "../component/logoutbutton";
 import { getCurrentUser } from "@/app/lib/getCurrentUser";
 
@@ -35,13 +36,20 @@ export default async function DashboardPage() {
   const bgColor = roleColors[role];
   const roleName = roleNames[role];
 
-  //Returns background colour based on role and logout button
+  //Returns background colour based on role, logout button, and events button
   return (
-    <div
+    <div 
       className={`flex h-screen items-center justify-center text-white text-4xl font-bold ${bgColor}`}
-    >
-      {roleName}
-      <LogoutButton />
+      >
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex items-center">
+          {roleName}
+          <LogoutButton />
+        </div>
+        <Link href="/events">
+          <button className="bg-black text-blue-500 px-4 py-2 rounded">Events</button>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 import { cookies } from "next/headers";
 import { Role } from "@/auth/User";
+import AdminPanel from "@/components/admin/AdminPanel";
 
 const roleColors: Record<Role, string> = {
   [Role.TEST]: "bg-gray-500",
@@ -25,7 +26,11 @@ export default async function DashboardPage() {
   if (!token) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-100 text-red-600 text-xl">
-        No token found. Please <a href="/login" className="underline ml-1">login</a>.
+        No token found. Please{" "}
+        <a href="/login" className="underline ml-1">
+          login
+        </a>
+        .
       </div>
     );
   }
@@ -42,18 +47,30 @@ export default async function DashboardPage() {
     const bgColor = roleColors[role];
     const roleName = roleNames[role];
 
+    // Show admin panel to DEPARTMENTADMIN and SYSTEMADMIN
+    const isAdmin = role === Role.DEPARTMENTADMIN || role === Role.SYSTEMADMIN;
+
     return (
-      <div
-        className={`flex h-screen items-center justify-center text-white text-4xl font-bold ${bgColor}`}
-      >
-        {roleName}
+      <div className={`min-h-screen p-6 ${bgColor} text-white`}>
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4">{roleName}</h1>
+          {isAdmin ? (
+            <AdminPanel />
+          ) : (
+            <div className="text-xl">Welcome, {decoded.email}</div>
+          )}
+        </div>
       </div>
     );
   } catch (err) {
     console.error("Invalid JWT:", err);
     return (
       <div className="flex h-screen items-center justify-center bg-gray-100 text-red-600 text-xl">
-        Invalid or expired token. Please <a href="/login" className="underline ml-1">login again</a>.
+        Invalid or expired token. Please{" "}
+        <a href="/login" className="underline ml-1">
+          login again
+        </a>
+        .
       </div>
     );
   }

@@ -6,7 +6,6 @@ export default function BroadcastPanel() {
   const [subject, setSubject] = useState('');
   const [html, setHtml] = useState('<p>Announcement</p>');
   const [emailsText, setEmailsText] = useState('');
-  const [role, setRole] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
 
   async function sendAll() {
@@ -22,22 +21,16 @@ export default function BroadcastPanel() {
   async function sendEmails() {
     setMsg('sending to emails...');
     const emails = emailsText.split(/[\s,;]+/).map(e => e.trim()).filter(Boolean);
+    if (!emails.length) {
+      setMsg('Please provide at least one email.');
+      return;
+    }
     const res = await fetch('/api/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'broadcast', emails, subject, html }),
     });
     setMsg(res.ok ? 'Sent to emails' : `Error: ${await res.text()}`);
-  }
-
-  async function sendRole() {
-    setMsg('sending to role...');
-    const res = await fetch('/api/admin/broadcast-group', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role, subject, html }),
-    });
-    setMsg(res.ok ? `Sent to ${role}` : `Error: ${await res.text()}`);
   }
 
   return (
@@ -51,7 +44,6 @@ export default function BroadcastPanel() {
 
       <div className="flex gap-2 mb-4">
         <button onClick={sendAll} className="bg-blue-600 text-white px-3 py-2 rounded">Send to All</button>
-        <button onClick={sendRole} className="bg-yellow-600 text-white px-3 py-2 rounded">Send to Role</button>
       </div>
 
       <div className="mb-4">

@@ -20,3 +20,4 @@ INSERT INTO feedback (event_name, avg_rating, feedback_count, comments) VALUES
   ('Fear Fest', 4.9, 150, 'Spooky atmosphere; Well organized with amazing props and effect; Very thrilling and kept me on edge the whole time; Helped me get into the Halloween spirit;Staff was enthusiatic and made the event more fun'),
   ('Voyage', 3.6, 80, 'Unforgettable views throughout the night; Amazing music; helped meet new people; Well organized event with smooth boarding; Friendly staff and overall relaxing, enjoyable cruise');
 
+

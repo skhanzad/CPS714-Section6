@@ -131,3 +131,13 @@ export enum Role {
 }
 //Please look at dashboard_test for implementation
 ```
+
+## Test Cases
+```bash
+# After completing getting started
+# In the root directory of the project run:
+npm test
+
+#Code: src/auth/__test__/
+```
+<img src="public/authtest.png" />

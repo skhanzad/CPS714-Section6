@@ -38,6 +38,12 @@ export default function Home() {
             >
               Organizer Analytics & Reporting Dashboard
             </Link>
+            <Link 
+              href="/admin" 
+              className="block w-full bg-orange-600 text-white py-3 px-4 rounded hover:bg-orange-700 transition text-center"
+            >
+              Ticket System
+            </Link>
           </div>
         </div>
        </div>

@@ -1,4 +1,20 @@
 # Team 1
+- root/
+  - README-team1.md
+  - src/
+      - app/
+         - api/
+            - login/
+            - logout/
+            - signup/
+         - lib/
+            - getCurrentUsers.ts
+         - dashboard_test/
+         - login/
+         - signup/
+         - globals.css
+         - page.tsx
+      - auth/
 
 ## Prerequisites
 
@@ -30,6 +46,21 @@
    ```
    http://localhost:3000
 # Features
+Upon opening the app, you will be greeted by the homepage. You can access the sign up or log in via the buttons
+Code: /src/app/page.tsx
+<img src="public/homepage.png" width="1080" />
+
+The sign up page provides input for name, email, student number and password. 
+Code: /src/app/signup/page.tsx
+<img src="public/signup.png" width="1080" />
+
+The log in page provides input for student number and password. Also provides sign up button in case user needs to make an account.
+Code: /src/app/login/page.tsx
+<img src="public/login.png" width="1080" />
+
+The dashboard page presents a simple demonstration of the user's role and a log out button.
+Code: /src/app/dashboard_test/page.tsx
+<img src="public/dashboard.png" width="1080" />
 
 # Useful things to know
 
@@ -65,26 +96,38 @@ CREATE TABLE public.users (
 );
 ```
 
-## Log off Button / User info
+## Log off Button
 ``` Javascript
 //Adding the logout button can be done so by importing the component/logoutbutton.tsx to your page.
+import LogoutButton from "../component/logoutbutton";
+return (
+      <LogoutButton />
+  );
+//Please look at dashboard_test for implementation
+```
 
-//The authentication and user data are managed by cookies. Read in the cookie data:
-const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      studentId: string;
-      email: string;
-      role: Role;
-    };
+## User Session
+``` Javascript
+// The authentication and user session are managed by cookies. 
+// The public lib getCurrentUser function allows reusable session information
+// Read in the session data:
+import { getCurrentUser } from "@/app/lib/getCurrentUser";
 
-//Roles are organized:
-Role {
+const user = await getCurrentUser(); // await the async function
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100 text-red-600 text-xl">
+        No token found. Please <a href="/login" className="underline ml-1">login</a>.
+      </div>
+    );
+  }
+// Roles are managed via an enum in User.ts:
+export enum Role {
     TEST = 0,
     STUDENT = 1,
     CLUBLEADER = 2,
     DEPARTMENTADMIN = 3,
     SYSTEMADMIN = 4,
 }
-
-Please look at dashboard_test for implementation
+//Please look at dashboard_test for implementation
 ```

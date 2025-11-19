@@ -24,7 +24,7 @@ DEBUG_MODE = True
 
 
 
-DUMMY_MODE = True  # False = use PostgreSQL, True = use CSV files
+DUMMY_MODE = False  # False = use PostgreSQL, True = use CSV files
 
 
 
@@ -53,7 +53,7 @@ DATABASE_CONFIG = {
 
 # SQL queries
 EVENTS_QUERY = "SELECT * FROM event_summary;"
-FEEDBACK_QUERY = "SELECT * FROM feedback;"
+FEEDBACK_QUERY = "SELECT event_name, rating, comment FROM event_feedback_submissions;"
 AUDIENCE_QUERY = "SELECT * FROM audience;"
 
 

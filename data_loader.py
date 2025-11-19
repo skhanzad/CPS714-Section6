@@ -168,6 +168,7 @@ def get_database_connection():
 def load_events_from_database(connection) -> pd.DataFrame:
     """
     Loads events from the database using the configured query.
+    If the event_summary view doesn't exist, tries to create it or queries base tables directly.
     """
     try:
         # Suppress pandas warning about psycopg2 connections
@@ -179,7 +180,67 @@ def load_events_from_database(connection) -> pd.DataFrame:
         logger.info(f"Successfully loaded {len(events_df)} events from database.")
         return events_df
     except Exception as e:
-        raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading events: {str(e)}")
+        error_str = str(e)
+        # If the view doesn't exist, try to create it or query base tables directly
+        if "does not exist" in error_str or "relation" in error_str.lower():
+            logger.warning(f"event_summary view not found. Attempting to create it or query base tables. Error: {error_str}")
+            
+            # Try to create the view first
+            try:
+                create_view_query = """
+                CREATE OR REPLACE VIEW event_summary AS
+                SELECT
+                  e.title AS event_name,
+                  COUNT(a.id) AS rsvp_count,
+                  COALESCE(SUM(CASE WHEN a.checked_in THEN 1 ELSE 0 END), 0) AS actual_attendance
+                FROM events e
+                LEFT JOIN attendees a ON e.id = a.event_id
+                GROUP BY e.title
+                ORDER BY e.title;
+                """
+                cursor = connection.cursor()
+                cursor.execute(create_view_query)
+                connection.commit()
+                cursor.close()
+                logger.info("Successfully created event_summary view. Retrying query...")
+                
+                # Retry the original query
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore", message=".*DBAPI2.*")
+                    events_df = pd.read_sql(EVENTS_QUERY, connection)
+                validate_dataframe(events_df, ["event_name", "rsvp_count", "actual_attendance"], "Events")
+                logger.info(f"Successfully loaded {len(events_df)} events from database after creating view.")
+                return events_df
+                
+            except Exception as create_error:
+                # If creating the view fails, try querying directly from base tables
+                logger.warning(f"Failed to create view. Attempting to query base tables directly. Error: {str(create_error)}")
+                try:
+                    fallback_query = """
+                    SELECT
+                      e.title AS event_name,
+                      COUNT(a.id) AS rsvp_count,
+                      COALESCE(SUM(CASE WHEN a.checked_in THEN 1 ELSE 0 END), 0) AS actual_attendance
+                    FROM events e
+                    LEFT JOIN attendees a ON e.id = a.event_id
+                    GROUP BY e.title
+                    ORDER BY e.title;
+                    """
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("ignore", message=".*DBAPI2.*")
+                        events_df = pd.read_sql(fallback_query, connection)
+                    validate_dataframe(events_df, ["event_name", "rsvp_count", "actual_attendance"], "Events")
+                    logger.info(f"Successfully loaded {len(events_df)} events from database using base tables.")
+                    return events_df
+                except Exception as fallback_error:
+                    # If base tables also don't exist, return empty dataframe
+                    logger.error(f"Failed to query base tables. Returning empty DataFrame. Error: {str(fallback_error)}")
+                    empty_df = pd.DataFrame(columns=["event_name", "rsvp_count", "actual_attendance"])
+                    logger.info("Returning empty events DataFrame (tables/views not available).")
+                    return empty_df
+        
+        # For other errors, raise as normal
+        raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading events: {error_str}")
 
 
 def load_feedback_from_database(connection) -> pd.DataFrame:

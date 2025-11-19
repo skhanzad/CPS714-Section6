@@ -2,85 +2,84 @@
 --  EVENTS, ROOMS, BOOKINGS, AND RELATED TABLES
 -- ------------------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS rooms (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  capacity INTEGER NOT NULL,
-  features JSONB NOT NULL
-);
+-- Note: Tables are already created in 20251112000100 with UUID types
+-- This migration only creates rooms and resources tables if they don't exist
+-- and inserts sample data
 
-CREATE TABLE IF NOT EXISTS resources (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL
-);
+-- Create rooms table only if it doesn't exist (checking by trying to create with UUID first)
+DO $$
+BEGIN
+  -- Check if rooms table exists, if not create it
+  IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'rooms') THEN
+    CREATE TABLE rooms (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL,
+      capacity INTEGER NOT NULL,
+      features JSONB NOT NULL
+    );
+  END IF;
+END $$;
 
-CREATE TABLE IF NOT EXISTS bookings (
-  id TEXT PRIMARY KEY,
-  room_id TEXT NOT NULL,
-  start_time TIMESTAMP NOT NULL,
-  end_time TIMESTAMP NOT NULL,
-  resources JSONB NOT NULL,
-  status TEXT NOT NULL CHECK(status IN ('pending','approved','denied')),
-  requested_by TEXT NOT NULL,
-  FOREIGN KEY (room_id) REFERENCES rooms(id)
-);
+-- Create resources table only if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'resources') THEN
+    CREATE TABLE resources (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name TEXT NOT NULL
+    );
+  END IF;
+END $$;
 
-CREATE INDEX IF NOT EXISTS idx_bookings_room_time
-  ON bookings(room_id, start_time, end_time);
-
-CREATE TABLE IF NOT EXISTS events (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  description TEXT,
-  date DATE NOT NULL,
-  start_time TEXT NOT NULL,
-  end_time TEXT,
-  location TEXT NOT NULL,
-  capacity INTEGER,
-  status TEXT NOT NULL CHECK(status IN ('active','canceled')),
-  booking_id TEXT REFERENCES bookings(id)
-);
-
-CREATE TABLE IF NOT EXISTS attendees (
-  id TEXT PRIMARY KEY,
-  event_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  email TEXT,
-  checked_in BOOLEAN NOT NULL DEFAULT FALSE,
-  qr_id TEXT NOT NULL UNIQUE,
-  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_attendees_event
-  ON attendees(event_id);
-
-CREATE TABLE IF NOT EXISTS attachments (
-  id TEXT PRIMARY KEY,
-  event_id TEXT NOT NULL,
-  type TEXT NOT NULL CHECK(type IN ('link','file')),
-  url TEXT NOT NULL,
-  name TEXT,
-  mime TEXT,
-  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-);
-
-CREATE INDEX IF NOT EXISTS idx_attachments_event
-  ON attachments(event_id);
+-- Create bookings table only if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'bookings') THEN
+    CREATE TABLE bookings (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      room_id UUID NOT NULL REFERENCES rooms(id),
+      start_time TIMESTAMP NOT NULL,
+      end_time TIMESTAMP NOT NULL,
+      resources JSONB NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('pending','approved','denied')),
+      requested_by TEXT NOT NULL
+    );
+    CREATE INDEX idx_bookings_room_time ON bookings(room_id, start_time, end_time);
+  END IF;
+END $$;
 
 -- ------------------------------------------------------------
---  SAMPLE DATA INSERTS
+--  SAMPLE DATA INSERTS (only if tables use UUID)
 -- ------------------------------------------------------------
+
+-- Insert rooms (using UUID)
+INSERT INTO rooms (id, name, capacity, features)
+SELECT gen_random_uuid(), 'Room 101', 40, '["projector"]'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM rooms WHERE name = 'Room 101')
+ON CONFLICT DO NOTHING;
 
 INSERT INTO rooms (id, name, capacity, features)
-VALUES
-  ('R101', 'Room 101', 40, '["projector"]'::jsonb),
-  ('R202', 'Lecture Hall 202', 120, '["projector","microphone"]'::jsonb),
-  ('M15',  'Meeting Room 15', 12, '["whiteboard"]'::jsonb)
+SELECT gen_random_uuid(), 'Lecture Hall 202', 120, '["projector","microphone"]'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM rooms WHERE name = 'Lecture Hall 202')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO rooms (id, name, capacity, features)
+SELECT gen_random_uuid(), 'Meeting Room 15', 12, '["whiteboard"]'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM rooms WHERE name = 'Meeting Room 15')
+ON CONFLICT DO NOTHING;
+
+-- Insert resources (using UUID)
+INSERT INTO resources (id, name)
+SELECT gen_random_uuid(), 'Projector'
+WHERE NOT EXISTS (SELECT 1 FROM resources WHERE name = 'Projector')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO resources (id, name)
-VALUES
-  ('res-projector',  'Projector'),
-  ('res-microphone', 'Microphone'),
-  ('res-catering',   'Catering')
+SELECT gen_random_uuid(), 'Microphone'
+WHERE NOT EXISTS (SELECT 1 FROM resources WHERE name = 'Microphone')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO resources (id, name)
+SELECT gen_random_uuid(), 'Catering'
+WHERE NOT EXISTS (SELECT 1 FROM resources WHERE name = 'Catering')
 ON CONFLICT DO NOTHING;

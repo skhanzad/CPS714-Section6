@@ -6,3 +6,4 @@
 DELETE FROM feedback WHERE event_name IN ('GDG Hackathon', 'Met Eng', 'Orientation');
 
 
+

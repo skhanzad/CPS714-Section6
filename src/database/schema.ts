@@ -37,6 +37,8 @@ export const rewardsTable = pgTable("rewards", {
   listedAt: timestamp("listed_at").defaultNow().notNull(),
 });
 
+// Table to track redeemed rewards
+
 export const redeemedRewardsTable = pgTable("redeemed_rewards", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")

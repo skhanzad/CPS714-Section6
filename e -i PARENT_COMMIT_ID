@@ -1,0 +1,29 @@
+[33m988701f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32m8/ticketsystem[m[33m)[m Remove local sendgrid.env from repo
+[33m8516851[m initialized SG API route
+[33m58725a5[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/8/ticketsystem[m[33m, [m[1;31morigin/6/main[m[33m, [m[1;32mmain[m[33m)[m Merge pull request #6 from claytonbarnett-tmu/main
+[33mcba5e80[m I put a comment for git permission testing This is my comment
+[33m9f566b4[m Merge pull request #4 from CGCCollin/dev-cc
+[33mdb7cab9[m Merge branch 'main' into dev-cc
+[33m46e7f3f[m fixed migration
+[33m153b413[m update ignore file
+[33md5abc31[m Merge branch '6/main'
+[33me9e8c71[m update schema
+[33madef793[m added schema
+[33m2aa5951[m added login page. fixed issue with roles being undefined in login logic. added test dashboard page. created test homepage with login button
+[33m41d1ffd[m Change POSTGRES_DATABASE to campus_connect_db
+[33m16544c8[m Merge pull request #3 from CGCCollin/daniel-sql-bringup
+[33m339644c[m Merge pull request #2 from CGCCollin/daniel-sql-bringup
+[33mb502e53[m rm ts-node
+[33mb10fca9[m rm comment
+[33m5b2bc3d[m update database schema and dummy data
+[33m9d3a517[m rm test file
+[33m7767df0[m create User class with some basic functionalities for now
+[33m11c38eb[m fix sql initialization
+[33mf78d8f9[m added dockerfile to copy sql file into the container for table creation
+[33m10c86f5[m Merge pull request #1 from CGCCollin/dev_cc
+[33m754f2dd[m init commit
+[33m40ce590[m initial sql test
+[33m66093b4[m Merge pull request #1 from skhanzad/base_project
+[33m0294753[m init base project
+[33m5008dff[m Update README.md
+[33m88ed624[m Initial commit

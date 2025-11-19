@@ -34,9 +34,8 @@ def calculate_attendance_rate(events_df: pd.DataFrame) -> pd.DataFrame:
             result_df["actual_attendance"] / result_df["rsvp_count"].replace(0, pd.NA)
         ) * 100
         
+        result_df["attendance_rate"] = pd.to_numeric(result_df["attendance_rate"], errors='coerce').fillna(0)
         result_df["attendance_rate"] = result_df["attendance_rate"].round(1)
-        
-        result_df["attendance_rate"] = result_df["attendance_rate"].fillna(0)
         
         logger.info("Successfully calculated attendance rates.")
         return result_df
@@ -77,7 +76,7 @@ def calculate_summary_statistics(
             "total_rsvp": total_rsvp,
             "total_attendance": total_attendance,
             "overall_attendance_rate": round(overall_attendance_rate, 1),
-            "avg_rating": round(avg_rating, 1),
+            "avg_rating": round(avg_rating, 2),  # Round to 2 decimal places for test compatibility
             "total_feedback": total_feedback,
             "total_students": total_students
         }

@@ -5,10 +5,15 @@
 # Keeps styling consistent and makes the code cleaner
 
 from dash import html, dcc
-from typing import List, Dict
+from typing import List, Dict, Optional
 import pandas as pd
+import logging
 
 from config import COLORS, APP_TITLE, APP_DESCRIPTION
+
+# Logging setup
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -82,37 +87,80 @@ def create_statistics_card(value: str, label: str, color: str) -> html.Div:
     })
 
 
-def create_statistics_row(statistics: Dict[str, float]) -> html.Div:
+def create_statistics_row(statistics: Optional[Dict[str, float]]) -> html.Div:
     """
     Creates a row of stat cards for the top of the dashboard.
     Shows total RSVPs, attendance, attendance rate, and avg rating.
+    Handles missing or invalid statistics gracefully.
     """
-    return html.Div([
-        create_statistics_card(
-            f"{statistics['total_rsvp']:,}",
-            "Total RSVPs",
-            COLORS["primary"]
-        ),
-        create_statistics_card(
-            f"{statistics['total_attendance']:,}",
-            "Total Attendance",
-            COLORS["success"]
-        ),
-        create_statistics_card(
-            f"{statistics['overall_attendance_rate']:.1f}%",
-            "Overall Attendance Rate",
-            COLORS["info"]
-        ),
-        create_statistics_card(
-            f"{statistics['avg_rating']:.1f}",
-            "Average Rating",
-            COLORS["danger"]
-        )
-    ], style={
-        "display": "flex",
-        "marginBottom": "30px",
-        "gap": "10px"
-    })
+    try:
+        if statistics is None:
+            logger.warning("Statistics is None, using default values")
+            statistics = {
+                "total_rsvp": 0,
+                "total_attendance": 0,
+                "overall_attendance_rate": 0.0,
+                "avg_rating": 0.0
+            }
+        
+        # Safely get values with defaults
+        total_rsvp = statistics.get("total_rsvp", 0)
+        total_attendance = statistics.get("total_attendance", 0)
+        overall_attendance_rate = statistics.get("overall_attendance_rate", 0.0)
+        avg_rating = statistics.get("avg_rating", 0.0)
+        
+        # Ensure values are numeric
+        try:
+            total_rsvp = int(total_rsvp) if total_rsvp is not None else 0
+        except (ValueError, TypeError):
+            total_rsvp = 0
+        
+        try:
+            total_attendance = int(total_attendance) if total_attendance is not None else 0
+        except (ValueError, TypeError):
+            total_attendance = 0
+        
+        try:
+            overall_attendance_rate = float(overall_attendance_rate) if overall_attendance_rate is not None else 0.0
+        except (ValueError, TypeError):
+            overall_attendance_rate = 0.0
+        
+        try:
+            avg_rating = float(avg_rating) if avg_rating is not None else 0.0
+        except (ValueError, TypeError):
+            avg_rating = 0.0
+        
+        return html.Div([
+            create_statistics_card(
+                f"{total_rsvp:,}",
+                "Total RSVPs",
+                COLORS["primary"]
+            ),
+            create_statistics_card(
+                f"{total_attendance:,}",
+                "Total Attendance",
+                COLORS["success"]
+            ),
+            create_statistics_card(
+                f"{overall_attendance_rate:.1f}%",
+                "Overall Attendance Rate",
+                COLORS["info"]
+            ),
+            create_statistics_card(
+                f"{avg_rating:.1f}",
+                "Average Rating",
+                COLORS["danger"]
+            )
+        ], style={
+            "display": "flex",
+            "marginBottom": "30px",
+            "gap": "10px"
+        })
+    
+    except Exception as e:
+        logger.error(f"Error creating statistics row: {str(e)}")
+        # Return empty row on error
+        return html.Div(style={"display": "flex", "marginBottom": "30px", "gap": "10px"})
 
 
 # ============================================================================
@@ -138,12 +186,43 @@ def create_section_header(title: str, border_color: str) -> html.H2:
 # ============================================================================
 # Tables
 # ============================================================================
-def create_events_performance_table(events_df: pd.DataFrame) -> html.Div:
+def create_events_performance_table(events_df: Optional[pd.DataFrame]) -> html.Div:
     """
     Creates a table showing event performance metrics.
     Displays event name, RSVP count, actual attendance, and attendance rate.
+    Handles empty or invalid dataframes gracefully.
     """
-    table_rows = [
+    try:
+        if events_df is None or events_df.empty:
+            return html.Div([
+                html.P(
+                    "No event performance data available.",
+                    style={
+                        "color": COLORS["muted"],
+                        "fontStyle": "italic",
+                        "padding": "20px",
+                        "textAlign": "center"
+                    }
+                )
+            ], style={"marginBottom": "30px"})
+        
+        required_columns = ["event_name", "rsvp_count", "actual_attendance", "attendance_rate"]
+        missing_columns = [col for col in required_columns if col not in events_df.columns]
+        if missing_columns:
+            logger.warning(f"Missing columns in events dataframe: {', '.join(missing_columns)}")
+            return html.Div([
+                html.P(
+                    f"Incomplete event data. Missing columns: {', '.join(missing_columns)}",
+                    style={
+                        "color": COLORS["muted"],
+                        "fontStyle": "italic",
+                        "padding": "20px",
+                        "textAlign": "center"
+                    }
+                )
+            ], style={"marginBottom": "30px"})
+        
+        table_rows = [
         html.Tr([
             html.Td(
                 row["event_name"],
@@ -182,9 +261,9 @@ def create_events_performance_table(events_df: pd.DataFrame) -> html.Div:
                 }
             )
         ]) for _, row in events_df.iterrows()
-    ]
-    
-    return html.Div([
+        ]
+        
+        return html.Div([
         html.Table([
             html.Thead([
                 html.Tr([
@@ -239,16 +318,35 @@ def create_events_performance_table(events_df: pd.DataFrame) -> html.Div:
             "borderRadius": "8px",
             "overflow": "hidden"
         })
-    ], style={"marginBottom": "30px"})
+        ], style={"marginBottom": "30px"})
+    
+    except Exception as e:
+        logger.error(f"Error creating events performance table: {str(e)}")
+        return html.Div([
+            html.P(
+                f"Error displaying event performance data: {str(e)}",
+                style={
+                    "color": COLORS["danger"],
+                    "padding": "20px",
+                    "textAlign": "center"
+                }
+            )
+        ], style={"marginBottom": "30px"})
 
 
 # ============================================================================
 # Comments dropdown
 # ============================================================================
-def create_event_comments_dropdown(event_names: List[str], initial_comments: List[str] = None, initial_event_name: str = None) -> html.Div:
+def create_event_comments_dropdown(event_names: Optional[List[str]], initial_comments: Optional[List[str]] = None, initial_event_name: Optional[str] = None, current_value: Optional[str] = None) -> html.Div:
     """
     Creates a dropdown to select which event's comments to view.
     Includes the dropdown and the display area for comments.
+    
+    Args:
+        event_names: List of event names available
+        initial_comments: Initial comments to display
+        initial_event_name: Initial event name to display
+        current_value: Currently selected value (preserved if valid)
     """
     # Need to include components with IDs even when empty (for callbacks)
     if not event_names:
@@ -293,6 +391,17 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
             )
         ], style={"marginTop": "30px"})
     
+    # Determine the dropdown value: preserve current_value if it's still valid, otherwise use initial_event_name or first event
+    if current_value and current_value in event_names:
+        dropdown_value = current_value
+        # Use the initial comments/event name that were passed (they should already be correct for the preserved value)
+        display_event_name = initial_event_name if initial_event_name else current_value
+        display_comments = initial_comments if initial_comments is not None else []
+    else:
+        dropdown_value = initial_event_name if initial_event_name and initial_event_name in event_names else (event_names[0] if event_names else None)
+        display_event_name = initial_event_name if initial_event_name and initial_event_name in event_names else (event_names[0] if event_names else "No Event")
+        display_comments = initial_comments if initial_comments is not None else []
+    
     return html.Div([
         html.H3(
             "View Feedback Comments by Event",
@@ -313,7 +422,7 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
         dcc.Dropdown(
             id="event-comments-dropdown",
             options=[{"label": name, "value": name} for name in event_names],
-            value=event_names[0],
+            value=dropdown_value,
             placeholder="Select an event...",
             clearable=False,
             style={
@@ -324,8 +433,8 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
         html.Div(
             id="comments-display-container",
             children=create_comments_display(
-                initial_comments if initial_comments else [],
-                initial_event_name if initial_event_name else (event_names[0] if event_names else "No Event")
+                display_comments,
+                display_event_name
             )
         )
     ], style={"marginTop": "30px"})
@@ -334,25 +443,27 @@ def create_event_comments_dropdown(event_names: List[str], initial_comments: Lis
 # ============================================================================
 # Comments display
 # ============================================================================
-def create_comments_display(comments: List[str], event_name: str) -> html.Div:
+def create_comments_display(comments: Optional[List[str]], event_name: str) -> html.Div:
     """
     Creates the display area for event comments.
     Shows each comment in a styled box.
+    Handles None or empty comments gracefully.
     """
-    if not comments:
-        return html.Div([
-            html.P(
-                f"No comments available for {event_name}.",
-                style={
-                    "color": COLORS["muted"],
-                    "fontStyle": "italic",
-                    "padding": "20px",
-                    "textAlign": "center"
-                }
-            )
-        ])
-    
-    comment_elements = [
+    try:
+        if not comments or comments is None:
+            return html.Div([
+                html.P(
+                    f"No comments available for {event_name}.",
+                    style={
+                        "color": COLORS["muted"],
+                        "fontStyle": "italic",
+                        "padding": "20px",
+                        "textAlign": "center"
+                    }
+                )
+            ])
+        
+        comment_elements = [
         html.Div([
             html.P(
                 comment,
@@ -367,9 +478,9 @@ def create_comments_display(comments: List[str], event_name: str) -> html.Div:
                 }
             )
         ]) for comment in comments
-    ]
-    
-    return html.Div([
+        ]
+        
+        return html.Div([
         html.H4(
             f"Comments for {event_name}",
             style={
@@ -387,18 +498,88 @@ def create_comments_display(comments: List[str], event_name: str) -> html.Div:
                 "padding": "10px"
             }
         )
-    ])
+        ])
+    
+    except Exception as e:
+        logger.error(f"Error creating comments display: {str(e)}")
+        return html.Div([
+            html.P(
+                f"Error displaying comments: {str(e)}",
+                style={
+                    "color": COLORS["danger"],
+                    "padding": "20px",
+                    "textAlign": "center"
+                }
+            )
+        ])
 
 
 # ============================================================================
 # Audience breakdown table
 # ============================================================================
-def create_audience_breakdown_table(audience_df: pd.DataFrame, total_students: int) -> html.Div:
+def create_audience_breakdown_table(audience_df: Optional[pd.DataFrame], total_students: int) -> html.Div:
     """
     Creates a detailed table showing audience breakdown by college and major.
     Includes student counts and percentages.
+    Handles empty or invalid dataframes gracefully.
     """
-    table_rows = [
+    try:
+        if audience_df is None or audience_df.empty:
+            return html.Div([
+                html.H3(
+                    "Detailed Audience Breakdown by College and Major",
+                    style={
+                        "color": COLORS["dark"],
+                        "marginTop": "30px",
+                        "marginBottom": "15px",
+                        "fontWeight": "600"
+                    }
+                ),
+                html.P(
+                    "No audience data available.",
+                    style={
+                        "color": COLORS["muted"],
+                        "fontStyle": "italic",
+                        "padding": "20px",
+                        "textAlign": "center"
+                    }
+                )
+            ])
+        
+        required_columns = ["college", "major", "students"]
+        missing_columns = [col for col in required_columns if col not in audience_df.columns]
+        if missing_columns:
+            logger.warning(f"Missing columns in audience dataframe: {', '.join(missing_columns)}")
+            return html.Div([
+                html.H3(
+                    "Detailed Audience Breakdown by College and Major",
+                    style={
+                        "color": COLORS["dark"],
+                        "marginTop": "30px",
+                        "marginBottom": "15px",
+                        "fontWeight": "600"
+                    }
+                ),
+                html.P(
+                    f"Incomplete audience data. Missing columns: {', '.join(missing_columns)}",
+                    style={
+                        "color": COLORS["muted"],
+                        "fontStyle": "italic",
+                        "padding": "20px",
+                        "textAlign": "center"
+                    }
+                )
+            ])
+        
+        # Ensure total_students is valid
+        try:
+            total_students = int(total_students) if total_students is not None else 0
+            if total_students < 0:
+                total_students = 0
+        except (ValueError, TypeError):
+            total_students = 0
+        
+        table_rows = [
         html.Tr([
             html.Td(
                 row["college"],
@@ -437,9 +618,9 @@ def create_audience_breakdown_table(audience_df: pd.DataFrame, total_students: i
             ["college", "students"],
             ascending=[True, False]
         ).iterrows()
-    ]
-    
-    return html.Div([
+        ]
+        
+        return html.Div([
         html.H3(
             "Detailed Audience Breakdown by College and Major",
             style={
@@ -503,7 +684,29 @@ def create_audience_breakdown_table(audience_df: pd.DataFrame, total_students: i
             "borderRadius": "8px",
             "overflow": "hidden"
         })
-    ])
+        ])
+    
+    except Exception as e:
+        logger.error(f"Error creating audience breakdown table: {str(e)}")
+        return html.Div([
+            html.H3(
+                "Detailed Audience Breakdown by College and Major",
+                style={
+                    "color": COLORS["dark"],
+                    "marginTop": "30px",
+                    "marginBottom": "15px",
+                    "fontWeight": "600"
+                }
+            ),
+            html.P(
+                f"Error displaying audience data: {str(e)}",
+                style={
+                    "color": COLORS["danger"],
+                    "padding": "20px",
+                    "textAlign": "center"
+                }
+            )
+        ])
 
 
 # ============================================================================

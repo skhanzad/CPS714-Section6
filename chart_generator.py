@@ -208,9 +208,8 @@ def create_feedback_rating_chart(feedback_df: pd.DataFrame) -> go.Figure:
         
         max_rating = feedback_df["avg_rating"].max()
         if pd.isna(max_rating):
-            max_rating = 5  # Default to 5 if all NaN
+            max_rating = 5  
         
-        # Cap y-axis at 5 if max rating is <= 5, otherwise add padding
         if max_rating <= 5:
             yaxis_max = 5
         else:
@@ -282,7 +281,6 @@ def create_audience_college_pie_chart(audience_by_college_df: pd.DataFrame) -> g
             color_discrete_sequence=px.colors.qualitative.Set3  
         )
     
-        # Show percentage and label inside the slices
         figure.update_traces(
             textposition="inside",
             textinfo="percent+label",

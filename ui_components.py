@@ -16,9 +16,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# ============================================================================
+
+
+
+
+
+
+
+
+
+
 # Header component
-# ============================================================================
 def create_header() -> html.Div:
     """
     Creates the dashboard header with title and description.
@@ -50,9 +58,25 @@ def create_header() -> html.Div:
     })
 
 
-# ============================================================================
-# Statistics cards
-# ============================================================================
+
+########################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+########################
+
+
+
+
+# Statistics
 def create_statistics_card(value: str, label: str, color: str) -> html.Div:
     """
     Creates a single stat card with a value and label.
@@ -85,6 +109,24 @@ def create_statistics_card(value: str, label: str, color: str) -> html.Div:
         "flex": "1",
         "margin": "0 10px"
     })
+
+
+
+
+########################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+########################
+
 
 
 def create_statistics_row(statistics: Optional[Dict[str, float]]) -> html.Div:
@@ -163,9 +205,25 @@ def create_statistics_row(statistics: Optional[Dict[str, float]]) -> html.Div:
         return html.Div(style={"display": "flex", "marginBottom": "30px", "gap": "10px"})
 
 
-# ============================================================================
+########################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+################################################
+############################################################################
+########################
+############################################################################
+########################
+
 # Section headers
-# ============================================================================
 def create_section_header(title: str, border_color: str) -> html.H2:
     """
     Creates a section header with a colored left border.
@@ -182,10 +240,24 @@ def create_section_header(title: str, border_color: str) -> html.H2:
         }
     )
 
+##################################
+########################
+############################################################################
+########################
+############################################################################
+########################
+############################################################################
+########################
+############################################################################
+########################
+############################################################################
+########################
+############################################################################
+########################
+##########################################
 
-# ============================================================================
+
 # Tables
-# ============================================================================
 def create_events_performance_table(events_df: Optional[pd.DataFrame]) -> html.Div:
     """
     Creates a table showing event performance metrics.
@@ -334,9 +406,18 @@ def create_events_performance_table(events_df: Optional[pd.DataFrame]) -> html.D
         ], style={"marginBottom": "30px"})
 
 
-# ============================================================================
+
+##################################
+########################
+############################################################################
+########################
+############################################################################
+########################
+##########################################
+
+
+
 # Comments dropdown
-# ============================================================================
 def create_event_comments_dropdown(event_names: Optional[List[str]], initial_comments: Optional[List[str]] = None, initial_event_name: Optional[str] = None, current_value: Optional[str] = None) -> html.Div:
     """
     Creates a dropdown to select which event's comments to view.
@@ -392,14 +473,22 @@ def create_event_comments_dropdown(event_names: Optional[List[str]], initial_com
         ], style={"marginTop": "30px"})
     
     # Determine the dropdown value: preserve current_value if it's still valid, otherwise use initial_event_name or first event
+    # Priority: current_value (user's selection) > initial_event_name > first event
     if current_value and current_value in event_names:
+        # User has selected a value and it's still valid - preserve it
         dropdown_value = current_value
-        # Use the initial comments/event name that were passed (they should already be correct for the preserved value)
-        display_event_name = initial_event_name if initial_event_name else current_value
+        display_event_name = current_value
+        # Re-fetch comments for the preserved value to ensure they're up to date
+        display_comments = initial_comments if initial_comments is not None else []
+    elif initial_event_name and initial_event_name in event_names:
+        # Use the initial event name if provided and valid
+        dropdown_value = initial_event_name
+        display_event_name = initial_event_name
         display_comments = initial_comments if initial_comments is not None else []
     else:
-        dropdown_value = initial_event_name if initial_event_name and initial_event_name in event_names else (event_names[0] if event_names else None)
-        display_event_name = initial_event_name if initial_event_name and initial_event_name in event_names else (event_names[0] if event_names else "No Event")
+        # Default to first event if available
+        dropdown_value = event_names[0] if event_names else None
+        display_event_name = event_names[0] if event_names else "No Event"
         display_comments = initial_comments if initial_comments is not None else []
     
     return html.Div([
@@ -440,9 +529,25 @@ def create_event_comments_dropdown(event_names: Optional[List[str]], initial_com
     ], style={"marginTop": "30px"})
 
 
-# ============================================================================
+##################################
+########################
+##########################################
+##################################
+########################
+##########################################
+
+##################################
+########################
+##########################################
+
+##################################
+########################
+##########################################
+
+
+
 # Comments display
-# ============================================================================
+# ==========================================
 def create_comments_display(comments: Optional[List[str]], event_name: str) -> html.Div:
     """
     Creates the display area for event comments.
@@ -514,9 +619,23 @@ def create_comments_display(comments: Optional[List[str]], event_name: str) -> h
         ])
 
 
-# ============================================================================
+
+
+
+##################################
+########################
+##########################################
+##################################
+########################
+##########################################
+##################################
+########################
+##########################################
+
+
+
+
 # Audience breakdown table
-# ============================================================================
 def create_audience_breakdown_table(audience_df: Optional[pd.DataFrame], total_students: int) -> html.Div:
     """
     Creates a detailed table showing audience breakdown by college and major.
@@ -709,9 +828,31 @@ def create_audience_breakdown_table(audience_df: Optional[pd.DataFrame], total_s
         ])
 
 
-# ============================================================================
+
+
+
+
+
+##################################
+########################
+##########################################
+
+
+##################################
+########################
+##########################################
+##################################
+########################
+##########################################
+
+
+
+
+
+
+
+
 # Section container
-# ============================================================================
 def create_section_container(children: List, background_color: str = COLORS["white"]) -> html.Div:
     """
     Creates a styled container for dashboard sections.
@@ -729,9 +870,18 @@ def create_section_container(children: List, background_color: str = COLORS["whi
     )
 
 
-# ============================================================================
+
+
+##################################
+########################
+##########################################
+##################################
+########################
+##########################################
+
+
+
 # Error message component
-# ============================================================================
 def create_error_message(message: str) -> html.Div:
     """
     Creates an error message display component.

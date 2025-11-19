@@ -6,11 +6,10 @@ import pandas as pd
 from typing import Tuple, Optional
 import logging
 
-# Lazy import psycopg2 only when needed (for database connections)
 try:
     import psycopg2
 except ImportError:
-    psycopg2 = None  # Will be checked when needed
+    psycopg2 = None  
 
 from config import (
     DUMMY_MODE,
@@ -213,7 +212,6 @@ def load_events_from_database(connection) -> pd.DataFrame:
                 return events_df
                 
             except Exception as create_error:
-                # If creating the view fails, try querying directly from base tables
                 logger.warning(f"Failed to create view. Attempting to query base tables directly. Error: {str(create_error)}")
                 try:
                     fallback_query = """
@@ -233,14 +231,16 @@ def load_events_from_database(connection) -> pd.DataFrame:
                     logger.info(f"Successfully loaded {len(events_df)} events from database using base tables.")
                     return events_df
                 except Exception as fallback_error:
-                    # If base tables also don't exist, return empty dataframe
                     logger.error(f"Failed to query base tables. Returning empty DataFrame. Error: {str(fallback_error)}")
                     empty_df = pd.DataFrame(columns=["event_name", "rsvp_count", "actual_attendance"])
                     logger.info("Returning empty events DataFrame (tables/views not available).")
                     return empty_df
         
-        # For other errors, raise as normal
         raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Error loading events: {error_str}")
+
+
+
+
 
 
 def load_feedback_from_database(connection) -> pd.DataFrame:
@@ -250,8 +250,6 @@ def load_feedback_from_database(connection) -> pd.DataFrame:
     Returns empty dataframe if table doesn't exist (graceful degradation).
     """
     try:
-        # Load raw feedback submissions from the table
-        # Suppress pandas warning about psycopg2 connections
         import warnings
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message=".*DBAPI2.*")
@@ -269,18 +267,17 @@ def load_feedback_from_database(connection) -> pd.DataFrame:
                 f"{ERROR_MESSAGES['missing_column']} Missing columns in feedback: {', '.join(missing_columns)}"
             )
         
-        # Validate rating column
         if not pd.api.types.is_numeric_dtype(raw_feedback_df["rating"]):
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Rating must be numeric.")
         
-        # Validate ratings are between 1-5
         if ((raw_feedback_df["rating"] < 1) | (raw_feedback_df["rating"] > 5)).any():
             raise DataLoadError(f"{ERROR_MESSAGES['invalid_data']} Ratings must be between 1 and 5.")
         
-        # Group by event_name and aggregate
-        # Calculate average rating (rounded to 1 decimal)
-        # Count submissions per event
-        # Aggregate comments (join non-null comments with semicolon)
+
+
+
+
+
         feedback_df = raw_feedback_df.groupby("event_name").agg({
             "rating": ["mean", "count"],  # mean for average, count for feedback_count
             "comment": lambda x: "; ".join([str(c) for c in x if pd.notna(c) and str(c).strip() != ""])
@@ -319,7 +316,6 @@ def load_audience_from_database(connection) -> pd.DataFrame:
     Returns empty dataframe if table/view doesn't exist.
     """
     try:
-        # Suppress pandas warning about psycopg2 connections
         import warnings
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message=".*DBAPI2.*")

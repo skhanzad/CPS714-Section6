@@ -300,7 +300,6 @@ def create_dashboard_layout():
             initial_comments = get_comments_for_event(comments_by_event, initial_event_name)
         
         # Initialize the dropdown in the layout so it exists from the start
-        # This allows the State to reference it in the callback
         initial_dropdown = create_event_comments_dropdown(event_names, initial_comments, initial_event_name, None)
         
         # Build the full dashboard layout
@@ -308,9 +307,12 @@ def create_dashboard_layout():
         # Hidden interval component for auto-refresh
         dcc.Interval(
             id='interval-component',
-            interval=1*1000,  # Refresh every 5 seconds (in milliseconds)
+            interval=1*1000,  # Refresh every 1 seconds 
             n_intervals=0
         ),
+        
+        # Store to persist the selected dropdown value
+        dcc.Store(id='selected-event-store', data=None),
         
         # Top header
         create_header(),
@@ -419,18 +421,17 @@ app.layout = create_dashboard_layout()
         Output("feedback-rating-chart", 'figure'),
         Output("audience-college-chart", 'figure'),
         Output("audience-major-chart", 'figure'),
-        Output("audience-breakdown-table-container", 'children'),
-        Output("comments-dropdown-container", 'children')
+        Output("audience-breakdown-table-container", 'children')
     ],
     Input('interval-component', 'n_intervals'),
-    State('event-comments-dropdown', 'value'),
     prevent_initial_call=False
 )
-def update_dashboard(n_intervals, current_dropdown_value):
+def update_dashboard(n_intervals):
     """
     Refreshes all dashboard data and visualizations periodically.
     This ensures new feedback entries appear automatically.
-    Runs on page load (n_intervals=0) and every 5 seconds thereafter.
+    Runs on page load (n_intervals=0) and every 1 second thereafter.
+    Note: Does NOT recreate the dropdown to preserve user selection.
     """
     global events_df, feedback_df, audience_df
     global events_with_rates_df, statistics
@@ -447,44 +448,27 @@ def update_dashboard(n_intervals, current_dropdown_value):
             empty_fig = {}
             empty_div = html.Div()
             return (
-                empty_div,  # statistics-row-container
-                empty_div,  # events-performance-table-container
-                empty_fig,  # rsvp-attendance-chart
-                empty_fig,  # attendance-rate-chart
-                empty_fig,  # feedback-rating-chart
+                empty_div,  #  statistics-row-container
+                empty_div,  #  events-performance-table-container
+                empty_fig,  #rsvp-attendance-chart
+                empty_fig,  #  attendance-rate-chart
+                empty_fig,  #    feedback-rating-chart
                 empty_fig,  # audience-college-chart
-                empty_fig,  # audience-major-chart
-                empty_div,  # audience-breakdown-table-container
-                error_div   # comments-dropdown-container
+                empty_fig,  #  audience-major-chart
+                empty_div   # audience-breakdown-table-container
             )
         
-        # Reinitialize charts with fresh data
         charts = initialize_charts()
-        
-        # Get updated event names for comments dropdown
-        event_names = list(comments_by_event.keys()) if comments_by_event else []
-        
-        # Set up initial comments display
-        initial_comments = []
-        initial_event_name = "No Event Selected"
-        if event_names and comments_by_event:
-            # Use current dropdown value if it's still valid, otherwise use first event
-            if current_dropdown_value and current_dropdown_value in event_names:
-                initial_event_name = current_dropdown_value
-            else:
-                initial_event_name = event_names[0]
-            initial_comments = get_comments_for_event(comments_by_event, initial_event_name)
         
         return (
             create_statistics_row(statistics),  # statistics-row-container
             create_events_performance_table(events_with_rates_df),  # events-performance-table-container
-            charts.get("rsvp_attendance", {}),  # rsvp-attendance-chart
-            charts.get("attendance_rate", {}),  # attendance-rate-chart
-            charts.get("feedback_rating", {}),  # feedback-rating-chart
+            charts.get("rsvp_attendance", {}),  #   rsvp-attendance-chart
+            charts.get("attendance_rate", {}),  #attendance-rate-chart
+            charts.get("feedback_rating", {}),  #  feedback-rating-chart
             charts.get("audience_college", {}),  # audience-college-chart
-            charts.get("audience_major", {}),  # audience-major-chart
-            create_audience_breakdown_table(audience_df, statistics["total_students"]),  # audience-breakdown-table-container
-            create_event_comments_dropdown(event_names, initial_comments, initial_event_name, current_dropdown_value)  # comments-dropdown-container
+            charts.get("audience_major", {}),  #audience-major-chart
+            create_audience_breakdown_table(audience_df, statistics["total_students"])  # audience-breakdown-table-container
         )
         
     except Exception as e:
@@ -493,25 +477,93 @@ def update_dashboard(n_intervals, current_dropdown_value):
         empty_fig = {}
         empty_div = html.Div()
         return (
-            empty_div,  # statistics-row-container
-            empty_div,  # events-performance-table-container
+            empty_div,  #statistics-row-container
+            empty_div,  #events-performance-table-container
             empty_fig,  # rsvp-attendance-chart
-            empty_fig,  # attendance-rate-chart
-            empty_fig,  # feedback-rating-chart
-            empty_fig,  # audience-college-chart
-            empty_fig,  # audience-major-chart
-            empty_div,  # audience-breakdown-table-container
-            error_div   # comments-dropdown-container
+            empty_fig,  #attendance-rate-chart
+            empty_fig,  #  feedback-rating-chart
+            empty_fig,  #audience-college-chart
+            empty_fig,  #   audience-major-chart
+            empty_div   #audience-breakdown-table-container
         )
 
 
 @app.callback(
-    Output("comments-display-container", "children"),
-    Input("event-comments-dropdown", "value")
+    Output("event-comments-dropdown", "options"),
+    Input('interval-component', 'n_intervals'),
+    prevent_initial_call=False
 )
-def update_comments_display(selected_event):
+def update_dropdown_options(n_intervals):
     """
-    Updates the comments section when user picks a different event.
+    Updates dropdown options when events change.
+    The dropdown value is preserved automatically by Dash if it's still in the options.
+    """
+    global comments_by_event
+    
+    # Get current event names
+    event_names = list(comments_by_event.keys()) if comments_by_event else []
+    options = [{"label": name, "value": name} for name in event_names]
+    
+    return options
+
+
+@app.callback(
+    Output("selected-event-store", "data"),
+    Input("event-comments-dropdown", "value"),
+    prevent_initial_call=False
+)
+def store_selected_value(dropdown_value):
+    """
+    Stores the selected dropdown value so it can be preserved across updates.
+    """
+    return dropdown_value
+
+
+@app.callback(
+    Output("event-comments-dropdown", "value"),
+    Input("event-comments-dropdown", "options"),
+    [
+        State("event-comments-dropdown", "value"),
+        State("selected-event-store", "data")
+    ],
+    prevent_initial_call=True
+)
+def validate_dropdown_value(options, current_value, stored_value):
+    """
+    Ensures the dropdown value is valid when options change.
+    Only updates if current value becomes invalid.
+    """
+    from dash import no_update
+    
+    option_values = [opt["value"] for opt in options] if options else []
+    
+    # If current value is still valid, don't change it
+    if current_value and current_value in option_values:
+        return no_update
+    
+    # Current value is invalid, try stored value
+    if stored_value and stored_value in option_values:
+        return stored_value
+    
+    # Use first option if available
+    if option_values:
+        return option_values[0]
+    
+    return None
+
+
+@app.callback(
+    Output("comments-display-container", "children"),
+    [
+        Input("event-comments-dropdown", "value"),
+        Input('interval-component', 'n_intervals')
+    ],
+    prevent_initial_call=False
+)
+def update_comments_display(selected_event, n_intervals):
+    """
+    Updates the comments section when user picks a different event OR when data refreshes.
+    This ensures comments update automatically on refresh even if dropdown value hasn't changed.
     Handles errors gracefully.
     """
     global comments_by_event
@@ -524,7 +576,7 @@ def update_comments_display(selected_event):
         if not comments_by_event:
             return create_comments_display([], "No Comments Available")
         
-        # Get the comments for this event
+        # Get the comments for this event (will get fresh data on each interval refresh)
         comments = get_comments_for_event(comments_by_event, selected_event)
         return create_comments_display(comments, selected_event)
     

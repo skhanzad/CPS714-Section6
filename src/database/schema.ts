@@ -1,7 +1,13 @@
-import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uuid, smallint } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  studentId: text("student_id").notNull(),
+  password: text("password").notNull(),
+  permissionLevel: smallint("permission_level").notNull().default(0),
 });
 
 export const eventsTable = pgTable("events", {
@@ -13,8 +19,8 @@ export const rewardsProfilesTable = pgTable("rewards_profile", {
   userId: uuid("user_id")
     .notNull()
     .references(() => usersTable.id),
-  earnedCredits: integer("earned_credits").notNull().default(0),
   currentCredits: integer("current_credits").notNull().default(0),
+  earnedCredits: integer("earned_credits").notNull().default(0),
 });
 
 export const creditTransactionsTable = pgTable("credit_transactions", {
@@ -37,8 +43,6 @@ export const rewardsTable = pgTable("rewards", {
   discountCost: integer("discount_cost"),
   listedAt: timestamp("listed_at").defaultNow().notNull(),
 });
-
-// Table to track redeemed rewards
 
 export const redeemedRewardsTable = pgTable("redeemed_rewards", {
   id: uuid("id").defaultRandom().primaryKey(),

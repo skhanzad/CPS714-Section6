@@ -55,6 +55,9 @@ Code: /src/app/signup/page.tsx
 <img src="public/signup.png" width="1080" />
 
 The log in page provides input for student number and password. Also provides sign up button in case user needs to make an account.
+Test user credentials:
+123
+password
 Code: /src/app/login/page.tsx
 <img src="public/login.png" width="1080" />
 

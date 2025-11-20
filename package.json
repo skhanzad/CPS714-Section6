@@ -8,8 +8,6 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest"
-    "lint": "eslint",
-    "test": "vitest"
   },
   "dependencies": {
     "@sendgrid/mail": "^8.1.6",

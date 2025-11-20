@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "title": "Campus Coffee Card",
+    "cost": 350,
+    "description": "Grab a specialty drink at Oakham Cafe or Balzac's on campus.",
+    "category": "On-Campus Perk",
+    "badge": "Popular"
+  },
+  {
+    "id": 2,
+    "title": "Lab Printing Credits",
+    "cost": 200,
+    "description": "Extra $10 in print credits for the student computer labs.",
+    "category": "Academic"
+  },
+  {
+    "id": 3,
+    "title": "Athletics Day Pass",
+    "cost": 450,
+    "description": "One-day access to the RAC or MAC fitness centers.",
+    "category": "Wellness"
+  },
+  {
+    "id": 4,
+    "title": "Merch Voucher",
+    "cost": 600,
+    "description": "Use towards hoodies, tees, or accessories at the campus store.",
+    "category": "Campus Store",
+    "badge": "New"
+  },
+  {
+    "id": 5,
+    "title": "Guest Pass",
+    "cost": 300,
+    "description": "Bring a friend to a club event or workshop this month.",
+    "category": "Community"
+  },
+  {
+    "id": 6,
+    "title": "Exam Survival Kit",
+    "cost": 500,
+    "description": "Snacks, tea, and study essentials packed for finals week.",
+    "category": "Wellness"
+  }
+]

@@ -1,20 +1,16 @@
 @import "tailwindcss";
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground: #000000;
-    --background: #0b0b0e;
-    --foreground: #e5e5e5;
-    --card-bg: rgba(17, 18, 22, 0.6);
-    --card-border: #2a2a2f;
-    --blue: #3b82f6;
-  }
+:root {
+  --background: #0b0b0e;
+  --foreground: #e5e5e5;
+  --card-bg: rgba(17, 18, 22, 0.6);
+  --card-border: #2a2a2f;
+  --blue: #3b82f6;
 }
 
 body {
   @apply min-h-screen flex items-center justify-center font-sans antialiased;
   padding: 1rem;
-  color: var(--foreground);
   color: var(--foreground);
   background-color: var(--background);
   background-image: radial-gradient(
@@ -22,13 +18,6 @@ body {
     #0f172a 0%,
     rgba(0, 0, 0, 0) 60%
   );
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground: #000000;
-  }
 }
 
 .card {
@@ -52,15 +41,9 @@ body {
 .btn-primary:hover {
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
 }
-.btn-primary:hover {
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
-}
 
 .btn-secondary {
   @apply bg-zinc-800 text-white hover:bg-zinc-700;
-}
-.btn-secondary:hover {
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
 }
 .btn-secondary:hover {
   box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);

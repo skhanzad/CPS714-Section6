@@ -8,6 +8,7 @@ import {
   usersTable,
 } from "../schema";
 
+// TODO: create profile if not exists
 export const getRewardsProfile = async (userId: string) => {
   const profile = await db
     .select()
@@ -22,6 +23,7 @@ export const addCredits = async (
   amount: number,
   eventId: string
 ) => {
+  if (amount <= 0) throw new Error("Points must be grater than zero.");
   await db.transaction(async (tx) => {
     await tx.insert(creditTransactionsTable).values({
       profileId,

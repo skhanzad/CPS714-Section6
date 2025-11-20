@@ -1,4 +1,10 @@
 import { Client } from 'pg';
+// Set env vars BEFORE importing the module
+process.env.POSTGRES_HOST = "localhost";
+process.env.POSTGRES_PORT = "5432";
+process.env.POSTGRES_USER = "root";
+process.env.POSTGRES_PASSWORD = "admin";
+process.env.POSTGRES_DATABASE = "campus_connect_db";
 import getDb from '../db';
 
 jest.mock('pg', () => {
@@ -13,8 +19,9 @@ jest.mock('pg', () => {
     };
 });
 
+
 describe('Database Module', () => {
-    let mockClient: never;
+    let mockClient: any;
     beforeEach(() => {
         jest.clearAllMocks();
         mockClient = new Client();
@@ -27,13 +34,13 @@ describe('Database Module', () => {
     describe('getDb', () => {
         test('should connect to database on first call.', async () => {
             const client = await getDb();
-
+            
             expect(Client).toHaveBeenCalledWith({
-                host: 'localhost',
-                port: 5432,
-                user: 'root',
-                password: 'admin',
-                database: 'campus_connect_db',
+                host: process.env.POSTGRES_HOST,
+                port: process.env.POSTGRES_PORT,
+                user: process.env.POSTGRES_USER,
+                password: process.env.POSTGRES_PASSWORD,
+                database: process.env.POSTGRES_DATABASE,
             });
             expect(mockClient.connect).toHaveBeenCalledTimes(1);
             expect(client).toBeDefined();

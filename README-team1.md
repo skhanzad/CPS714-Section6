@@ -1,14 +1,77 @@
-# Team 1 - useful things to know
+# Team 1
+- root/
+  - README-team1.md
+  - src/
+      - app/
+         - api/
+            - login/
+            - logout/
+            - signup/
+         - lib/
+            - getCurrentUsers.ts
+         - dashboard_test/
+         - login/
+         - signup/
+         - globals.css
+         - page.tsx
+      - auth/
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/)
+- [Next.js](https://nextjs.org)
+- [Docker](https://www.docker.com)
+- [Migration Tool](https://github.com/golang-migrate/migrate)
+
+# Getting Started on Opening the App
+
+0. Download the Team One artifact, which stores the User authentication and Role Management subproject
+
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Configure environment variables.Use the sample file as a starting point:
+   ```bash
+   cp .env.example .env
+   ```
+3. Start Docker services defined in `docker-compose.yml`:
+   ```bash
+   docker compose up -d
+   ```
+4. Launch the app
+   ```bash
+   npm run dev
+5. Open App in browser
+   ```
+   http://localhost:3000
+# Features
+Upon opening the app, you will be greeted by the homepage. You can access the sign up or log in via the buttons
+Code: /src/app/page.tsx
+<img src="public/homepage.png" width="1080" />
+
+The sign up page provides input for name, email, student number and password. 
+Code: /src/app/signup/page.tsx
+<img src="public/signup.png" width="1080" />
+
+The log in page provides input for student number and password. Also provides sign up button in case user needs to make an account.
+Test user credentials:
+123
+password
+Code: /src/app/login/page.tsx
+<img src="public/login.png" width="1080" />
+
+The dashboard page presents a simple demonstration of the user's role and a log out button.
+Code: /src/app/dashboard_test/page.tsx
+<img src="public/dashboard.png" width="1080" />
+
+# Useful things to know
 
 ## Manually connecting to the database
 ```bash
-# connect to the database on the host:
-export PGPASSWORD="admin"
-psql -U root -h localhost -d campus_connect_db
-
-# or connect to the database inside the container:
+# Connect to the database inside the container:
 docker exec -it cps714_postgres /bin/bash
-psql -U root -d campus_connect_db
+psql -d campus_connect_db
 ```
 
 ## Database operations
@@ -21,19 +84,6 @@ psql -U root -d campus_connect_db
 
 # List tables in current database
 \dt
-```
-
-## Dumping and restoring the database
-```bash
-# install psql tools
-sudo apt install postgresql-client-16
-
-# dump the database's contents into an sql file
-export PGPASSWORD="admin"
-pg_dump -U root -h localhost -p 5432 campus_connect_db > campus_connect_db.sql
-
-# restore the database from an sql file
-psql -U root -h localhost -d campus_connect_db -f campus_connect_db.sql
 ```
 
 ## Database schema
@@ -49,26 +99,48 @@ CREATE TABLE public.users (
 );
 ```
 
-## Log off Button / User info
+## Log off Button
+``` Javascript
+//Adding the logout button can be done so by importing the component/logoutbutton.tsx to your page.
+import LogoutButton from "../component/logoutbutton";
+return (
+      <LogoutButton />
+  );
+//Please look at dashboard_test for implementation
 ```
-Adding the logout button can be done so by importing the component/logoutbutton.tsx to your page.
 
-The authentication and user data are managed by cookies. Read in the cookie data:
-const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      studentId: string;
-      email: string;
-      role: Role;
-    };
+## User Session
+``` Javascript
+// The authentication and user session are managed by cookies. 
+// The public lib getCurrentUser function allows reusable session information
+// Read in the session data:
+import { getCurrentUser } from "@/app/lib/getCurrentUser";
 
-Roles are organized:
-Role {
+const user = await getCurrentUser(); // await the async function
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100 text-red-600 text-xl">
+        No token found. Please <a href="/login" className="underline ml-1">login</a>.
+      </div>
+    );
+  }
+// Roles are managed via an enum in User.ts:
+export enum Role {
     TEST = 0,
     STUDENT = 1,
     CLUBLEADER = 2,
     DEPARTMENTADMIN = 3,
     SYSTEMADMIN = 4,
 }
-
-Please look at dashboard_test for implementation
+//Please look at dashboard_test for implementation
 ```
+
+## Test Cases
+```bash
+# After completing getting started
+# In the root directory of the project run:
+npm test
+
+#Code: src/auth/__test__/
+```
+<img src="public/authtest.png" />

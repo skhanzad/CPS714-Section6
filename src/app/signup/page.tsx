@@ -10,6 +10,7 @@ export default function SignupPage() {
     const [email, setEmail] = useState("");
     const [studentId, setStudentId] = useState("");
     const [password, setPassword] = useState("");
+    const [clubLeader, setclubLeader] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     async function handleSubmit(e: React.FormEvent) {
@@ -60,7 +61,7 @@ export default function SignupPage() {
             const res = await fetch("/api/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ firstName: f, lastName: l, email: em, studentId: sid, password: pwd }),
+                body: JSON.stringify({ firstName: f, lastName: l, email: em, studentId: sid, password: pwd, clubLeader: clubLeader }),
             });
             if (res.ok) {
                 router.push("/login");
@@ -149,6 +150,17 @@ export default function SignupPage() {
                             minLength={7}
                             title="Password must be longer than 6 characters"
                         />
+                    </label>
+
+                    <label className="block">
+                        <span className="block font-medium mb-2 text-sm">Club Leader?</span>
+                            <input
+                            id="clubLeader"
+                            type="checkbox"
+                            checked={clubLeader}
+                            onChange={(e) => setclubLeader(e.target.checked)}
+                            className="w-full rounded-lg border border-zinc-700 bg-zinc-900/50 px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            />
                     </label>
 
                     {error && (

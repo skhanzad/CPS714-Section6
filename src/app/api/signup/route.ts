@@ -3,7 +3,7 @@ import User from "@/auth/User";
 
 export async function POST(req: Request) {
     try {
-        const { firstName, lastName, email, studentId, password } = await req.json();
+        const { firstName, lastName, email, studentId, password, clubLeader } = await req.json();
 
         //Determines if user already exists with studentId. Each account must have unique studentId
         const existingUser = await User.userexist(studentId);
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         }
 
         //Creates new user
-        const newUser = await User.signup(firstName, lastName, email, studentId, password);
+        const newUser = await User.signup(firstName, lastName, email, studentId, password, clubLeader);
         if (newUser === null) {
             return NextResponse.json({ error: "Sign Up failed" }, { status: 400 });
         }

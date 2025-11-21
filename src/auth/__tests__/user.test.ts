@@ -4,7 +4,7 @@ import getDb from '../db';
 jest.mock('../db');
 
 describe('User Class', () => {
-    let mockDb: never;
+    let mockDb: any;
 
     beforeEach(() => {
         mockDb = {

@@ -30,14 +30,17 @@ export default class User {
         lastName: string,
         email: string,
         studentId: string,
-        password: string
+        password: string,
+        clubLeader: boolean = false
     ): Promise<User | null> {
         const db = await getDb();
+        const role = clubLeader ? Role.CLUBLEADER : Role.STUDENT;
+
         const res = await db.query(
             "INSERT INTO users (first_name, last_name, email, student_id, password, permission_level) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [firstName, lastName, email, studentId, password, Role.STUDENT]
+            [firstName, lastName, email, studentId, password, role]
         );
-
+        
         if (res.rows.length === 0) {
             return null;
         }

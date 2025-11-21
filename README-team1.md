@@ -50,14 +50,14 @@ Upon opening the app, you will be greeted by the homepage. You can access the si
 Code: /src/app/page.tsx
 <img src="public/homepage.png" width="1080" />
 
-The sign up page provides input for name, email, student number and password. 
+The sign up page provides input for name, email, student number, password, and if the user wants to be a club leader. 
 Code: /src/app/signup/page.tsx
 <img src="public/signup.png" width="1080" />
 
 The log in page provides input for student number and password. Also provides sign up button in case user needs to make an account.
 Test user credentials:
-123
-password
+student#:123
+password:password
 Code: /src/app/login/page.tsx
 <img src="public/login.png" width="1080" />
 

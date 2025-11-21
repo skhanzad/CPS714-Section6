@@ -47,15 +47,22 @@ export const redeemReward = async (
   profileId: string,
   quantity: number
 ) => {
-  const isRedeemed = await db.transaction(async (tx) => {
+  if (quantity <= 0) {
+    return { success: false, error: "invalid_quantity" as const };
+  }
+
+  const result = await db.transaction(async (tx) => {
     // check if reward is redeemable
     const [reward] = await tx
       .select()
       .from(rewardsTable)
       .where(eq(rewardsTable.id, rewardId));
-    if (!reward || reward.quantity <= 0) return false;
+    if (!reward || reward.quantity < quantity) {
+      return { success: false, error: "unavailable" as const };
+    }
 
-    const cost = (reward.discountCost || reward.defaultCost) * quantity;
+    const unitCost = reward.discountCost ?? reward.defaultCost;
+    const cost = unitCost * quantity;
 
     // check if user has enough credits
     const [profile] = await tx
@@ -67,24 +74,41 @@ export const redeemReward = async (
           gte(rewardsProfilesTable.currentCredits, cost)
         )
       );
-    if (!profile) return false;
+    if (!profile) {
+      return { success: false, error: "insufficient" as const };
+    }
 
     // reduce inventory amount
-    await tx.update(rewardsTable).set({
-      quantity: sql`${rewardsTable.quantity} - ${quantity}`,
-    });
+    await tx
+      .update(rewardsTable)
+      .set({
+        quantity: sql`${rewardsTable.quantity} - ${quantity}`,
+      })
+      .where(eq(rewardsTable.id, rewardId));
     // add transaction
     await tx.insert(creditTransactionsTable).values({
       profileId,
       amount: -cost,
     });
     // update current total
-    await tx.update(rewardsProfilesTable).set({
-      //TODO: add total and update current
+    await tx
+      .update(rewardsProfilesTable)
+      .set({
+        currentCredits: sql`${rewardsProfilesTable.currentCredits} - ${cost}`,
+      })
+      .where(eq(rewardsProfilesTable.id, profileId));
+
+    // record redemption
+    await tx.insert(redeemedRewardsTable).values({
+      userId: profile.userId,
+      rewardId,
+      totalCost: cost,
     });
+
+    return { success: true as const };
   });
 
-  return isRedeemed;
+  return result ?? { success: false, error: "unknown" as const };
 };
 
 /**
@@ -98,6 +122,42 @@ export const listAvailableRewards = async () => {
     .where(gt(rewardsTable.quantity, 0));
 
   return availableRewards;
+};
+
+/**
+ * List all rewards (no quantity filter).
+ * Returns reward rows ordered by most recently listed.
+ */
+export const listRewards = async () => {
+  const rewards = await db
+    .select()
+    .from(rewardsTable)
+    .orderBy(sql`${rewardsTable.listedAt} DESC`);
+
+  return rewards;
+};
+
+type CreateRewardInput = {
+  item: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  quantity: number;
+  defaultCost: number;
+  discountCost?: number | null;
+};
+
+export const createReward = async (input: CreateRewardInput) => {
+  const payload = {
+    item: input.item,
+    description: input.description ?? null,
+    imageUrl: input.imageUrl ?? null,
+    quantity: input.quantity,
+    defaultCost: input.defaultCost,
+    discountCost: input.discountCost ?? null,
+  };
+
+  const [reward] = await db.insert(rewardsTable).values(payload).returning();
+  return reward;
 };
 
 /**
@@ -137,10 +197,11 @@ export const listLeaderboardByN = async (N: number) => {
       firstName: usersTable.firstName,
       lastName: usersTable.lastName,
       points: rewardsProfilesTable.earnedCredits,
+      currentCredits: rewardsProfilesTable.currentCredits,
     })
     .from(rewardsProfilesTable)
     .leftJoin(usersTable, eq(rewardsProfilesTable.userId, usersTable.id))
-    .orderBy(sql`points DESC`)
+    .orderBy(sql`${rewardsProfilesTable.earnedCredits} DESC`)
     .limit(N);
 
   return leaderboard;

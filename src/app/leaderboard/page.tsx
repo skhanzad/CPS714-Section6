@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,32 +7,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { listLeaderboardByN } from "@/database/queries/gamification";
 
-type Row = {
-  rank: number;
-  userId: string;
-  name: string;
-  totalAccumulated: number;
-  currentCredits: number;
+export const dynamic = "force-dynamic";
+
+const MAX_ROWS = 200;
+
+const formatName = (firstName?: string | null, lastName?: string | null) => {
+  const name = `${firstName ?? ""} ${lastName ?? ""}`.trim();
+  return name || "Unknown";
 };
 
-export default function LeaderboardPage() {
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
+export default async function LeaderboardPage() {
+  const leaderboard = await listLeaderboardByN(MAX_ROWS);
 
-  useEffect(() => {
-    fetch("/api/leaderboard")
-      .then((res) => res.json())
-      .then((data) => {
-        setRows(data.data || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const handleLogout = () => {
-    window.location.href = "/login";
-  };
+  const rows = leaderboard.map((entry, idx) => ({
+    rank: idx + 1,
+    userId: entry.userId,
+    name: formatName(entry.firstName, entry.lastName),
+    totalAccumulated: Number(entry.points ?? 0),
+    currentCredits: Number(entry.currentCredits ?? 0),
+  }));
 
   return (
     <main
@@ -48,7 +40,7 @@ export default function LeaderboardPage() {
         <h1 className="text-4xl font-bold mb-6">Leaderboard</h1>
 
         {/* Buttons */}
-        <div className="flex gap-3 mb-10">
+        <div className="flex gap-3 mb-10 flex-wrap">
           <a
             href="/dashboard_test"
             className="px-4 py-2 border rounded hover:bg-gray-700 transition"
@@ -56,45 +48,39 @@ export default function LeaderboardPage() {
             Dashboard
           </a>
 
-          <button
-            onClick={() =>
-              fetch("/api/test/add-points", { method: "POST" }).then(() =>
-                location.reload()
-              )
-            }
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-          >
-            +100 All
-          </button>
+          <form action="/api/test/add-points" method="post">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition w-full"
+            >
+              +100 All
+            </button>
+          </form>
 
-          <button
-            onClick={() =>
-              fetch("/api/test/remove-points", { method: "POST" }).then(() =>
-                location.reload()
-              )
-            }
-            className="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600 transition"
-          >
-            -100 All
-          </button>
+          <form action="/api/test/remove-points" method="post">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600 transition w-full"
+            >
+              -100 All
+            </button>
+          </form>
 
-          <button
-            onClick={() =>
-              fetch("/api/test/reset-points", { method: "POST" }).then(() =>
-                location.reload()
-              )
-            }
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-          >
-            Reset All
-          </button>
+          <form action="/api/test/reset-points" method="post">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition w-full"
+            >
+              Reset All
+            </button>
+          </form>
 
-          <button
-            onClick={handleLogout}
+          <a
+            href="/login"
             className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition"
           >
             Logout
-          </button>
+          </a>
         </div>
       </div>
 
@@ -103,8 +89,8 @@ export default function LeaderboardPage() {
         className="w-full max-w-4xl rounded-lg shadow-lg p-6"
         style={{ backgroundColor: "rgba(29, 50, 77)" }} // table bg
       >
-        {loading ? (
-          <p className="text-center text-white">Loading leaderboard...</p>
+        {rows.length === 0 ? (
+          <p className="text-center text-white">No leaderboard entries yet.</p>
         ) : (
           <Table>
             <TableCaption className="text-gray-300">

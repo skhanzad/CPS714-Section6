@@ -73,6 +73,7 @@ describe("gamification queries", () => {
         firstName: "Alice",
         lastName: "Barnett",
         points: 150,
+        currentCredits: 75,
       },
     ];
 

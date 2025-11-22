@@ -25,7 +25,6 @@ export async function POST(req: Request, context: any) {
             return NextResponse.json({error: "Event does not exist"},  {status: 404});
         }
 
-
         //next if the error wasnt thrown that means the event exists, so we will now try and RSVP to the event
         const { rsvp_count, capacity } = currentEvent.rows[0];
         let status = "RSVP";
@@ -35,8 +34,7 @@ export async function POST(req: Request, context: any) {
         }
 
         else if (rsvp_count >= capacity){ // here we know that its a limited event and if the rsvp_count is greater than or equal to capacity, we cannot add another, so throw an error saying its full
-            return  NextResponse.json({error: "The Event is Full"},  {status: 400});
-
+            status = "WAITLISTED";
         }
 
 
@@ -75,5 +73,32 @@ export async function POST(req: Request, context: any) {
     catch (err){
         return  NextResponse.json({error: "Something went wrong"},  {status: 500});
 
+    }
+}
+
+export async function GET(req: Request, context: any) {
+    try {
+
+        const params = await context.params;
+        const userId = params.id; // get the user id
+
+        const db = await getDb();  // we are going to connect with db
+        const result = await db.query(  // make the query to get interested
+            `
+            SELECT e.*
+            FROM rsvps r
+            JOIN events e ON e.id = r.event_id
+            WHERE r.user_id = $1 AND r.status = 'RSVP'
+            `,
+            [userId]
+        );
+
+        return NextResponse.json({ events: result.rows });
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json(
+            { error: "Something went wrong" },
+            { status: 500 }
+        );
     }
 }

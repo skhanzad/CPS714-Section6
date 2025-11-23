@@ -88,7 +88,7 @@ export async function GET(req: Request, context: any) {
             SELECT e.*
             FROM rsvps r
             JOIN events e ON e.id = r.event_id
-            WHERE r.user_id = $1 AND r.status = 'RSVP'
+            WHERE r.user_id = $1 AND  (r.status = 'RSVP' OR r.status = 'INTERESTED')
             `,
             [userId]
         );

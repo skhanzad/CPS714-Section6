@@ -1,17 +1,18 @@
 ALTER TABLE "users"
-ADD COLUMN interested_events UUID[];
+ADD COLUMN IF NOT EXISTS interested_events UUID[],
+ADD COLUMN IF NOT EXISTS points integer NOT NULL DEFAULT 0;
 
 ALTER TABLE "events"
-ADD COLUMN names TEXT NOT NULL,
-ADD COLUMN org TEXT NOT NULL,
-ADD COLUMN dateExact TEXT NOT NULL,
-ADD COLUMN locations TEXT NOT NULL,
-ADD COLUMN currStatus TEXT NOT NULL;
+ADD COLUMN IF NOT EXISTS names TEXT NOT NULL,
+ADD COLUMN IF NOT EXISTS org TEXT NOT NULL,
+ADD COLUMN IF NOT EXISTS dateExact TEXT NOT NULL,
+ADD COLUMN IF NOT EXISTS locations TEXT NOT NULL,
+ADD COLUMN IF NOT EXISTS currStatus TEXT NOT NULL;
 
 
-INSERT INTO events (names, org, dateExact, locations, currStatus) VALUES
-('Bug Push', 'MUESS', '2025/10/08 • 06:00 PM', 'KHW', 'done'),
-('Resume Roast', 'TMU CSCU', '2025/10/08 • 08:00 PM', 'DCC-208', 'done'),
-('Hackathon', 'TMU Tech Club', '2025/11/15 • 09:00 AM', 'DCC-101', 'upcoming'),
-('Career Fair', 'TMU CSCU', '2025/12/01 • 10:00 AM', 'Main Hall', 'upcoming'),
-('Networking Night', 'MUESS', '2025/11/20 • 07:00 PM', 'KHW', 'upcoming');
+INSERT INTO events (id, names, org, dateExact, locations, currStatus) VALUES
+('00000001-0000-0000-0000-000000000001', 'Bug Push', 'MUESS', '2025/10/08 • 06:00 PM', 'KHW', 'done'),          -- 1
+('00000002-0000-0000-0000-000000000002', 'Resume Roast', 'TMU CSCU', '2025/10/08 • 08:00 PM', 'DCC-208', 'done'), -- 2
+('00000003-0000-0000-0000-000000000003', 'Hackathon', 'TMU Tech Club', '2025/11/15 • 09:00 AM', 'DCC-101', 'upcoming'), -- 3
+('00000004-0000-0000-0000-000000000004', 'Career Fair', 'TMU CSCU', '2025/12/01 • 10:00 AM', 'Main Hall', 'upcoming'), -- 4
+('00000005-0000-0000-0000-000000000005', 'Networking Night', 'MUESS', '2025/11/20 • 07:00 PM', 'KHW', 'upcoming');   -- 5

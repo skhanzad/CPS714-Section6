@@ -7,7 +7,7 @@ type TopBarProps = {
 export default function TopBar({ userName }: TopBarProps) {
   return (
     <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <h1 className="text-2xl md:text-3xl font-semibold">
+      <h1 className="text-2xl md:text-3xl font-semibold text-black">
         Welcome back, <span className="text-blue-600">{userName}</span>
       </h1>
 
@@ -32,7 +32,7 @@ export default function TopBar({ userName }: TopBarProps) {
             className="rounded-full object-cover"
           />
           <div className="leading-tight text-sm"> 
-            <div className="font-medium">{userName}</div>
+            <div className="font-medium text-black">{userName}</div>
             <div className="text-gray-500">My Account</div> 
             { /* should be a button to show account , not sure if it links to another team or do we do this? */ }
           </div>

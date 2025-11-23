@@ -30,6 +30,7 @@ export default function HistoryPage() {
           fetch("/api/events")
             .then((res) => res.json())
             .then((events: EventItem[]) => {
+              
               // filter events that Jimmy attended
               const attended = events.filter((ev) =>
                 jimmy.attended_events.includes(ev.id)
@@ -45,7 +46,7 @@ export default function HistoryPage() {
   return (
     <DashboardLayout userName={`${currentUser?.first_name} ${currentUser?.last_name}`} activeRoute="history">
       <div className="bg-white rounded-2xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Event History</h2>
+        <h2 className="text-lg font-semibold mb-4 text-black">Event History</h2>
         <p className="text-sm text-gray-500 mb-4">
           Events you&apos;ve attended.
         </p>
@@ -59,7 +60,7 @@ export default function HistoryPage() {
             {events.map((ev) => (
               <li key={ev.id} className="py-3 flex justify-between">
                 <div>
-                  <div className="font-medium">{ev.names}</div>
+                  <div className="font-medium text-black">{ev.names}</div>
                   <div className="text-xs text-gray-500">{ev.org}</div>
                   <div className="text-xs text-gray-400">{ev.dateexact}</div>
                 </div>

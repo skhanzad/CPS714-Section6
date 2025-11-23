@@ -10,7 +10,7 @@ export default function PointsCard({ totalPoints, cardLastDigits }: PointsCardPr
 
   return (
     <div className="bg-white rounded-2xl shadow p-6">
-      <h2 className="text-lg font-semibold mb-4">My Account &amp; Points</h2>
+      <h2 className="text-lg font-semibold mb-4 text-black">My Account &amp; Points</h2>
 
       <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-2xl p-6 flex flex-col justify-between min-h-[170px]">
         <div>

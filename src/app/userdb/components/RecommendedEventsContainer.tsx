@@ -7,7 +7,7 @@ import { Events } from "pg";
 
 function getRecommendedEvents(events: EventItem[], currentUser: UserItem | null) { //Recommend events from the same orgs the user attended recently
   if(!currentUser) return [];
-  const pastOrgs = [...new Set( //Set ensures unique events onlyt, 
+  const pastOrgs = [...new Set( //Set ensures unique events only, 
     events
       .filter(ev => ev.currstatus === "done") //only look at events user attended
       .map(ev => ev.org))]; //Extract org name of these events

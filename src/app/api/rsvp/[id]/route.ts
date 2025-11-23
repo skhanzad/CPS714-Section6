@@ -85,10 +85,10 @@ export async function GET(req: Request, context: any) {
         const db = await getDb();  // we are going to connect with db
         const result = await db.query(  // make the query to get interested
             `
-            SELECT e.*
+            SELECT e.*, r.status
             FROM rsvps r
             JOIN events e ON e.id = r.event_id
-            WHERE r.user_id = $1 AND  (r.status = 'RSVP' OR r.status = 'INTERESTED')
+            WHERE r.user_id = $1 AND  (r.status = 'RSVP' OR r.status = 'INTERESTED' OR r.status = 'WAITLIST')
             `,
             [userId]
         );

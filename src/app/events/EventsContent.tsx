@@ -9,6 +9,7 @@ type EventItem = {
   location: string | null;
   capacity: number | null;
   rsvp_count: number | null;
+  status: string;
 };
 
 type ConfirmationModal = {
@@ -117,7 +118,7 @@ export default function EventsContent({ userId }: EventsContentProps) {
         ).json();
         setRsvpedEvents(rsvpData.events || []);
         const statusMsg =
-          data.status === "WAITLISTED" ?
+          data.status === "WAITLIST" ?
              "Event is full — you have been added to the waitlist."
                 : data.status === "INTERESTED"
             ? "Marked as interested in this event!"
@@ -187,6 +188,14 @@ export default function EventsContent({ userId }: EventsContentProps) {
                 >
                   <div>
                     <div className="text-lg font-semibold">{ev.event_name}</div>
+                    <div className="text-white font-semibold">
+                      Status:{" "}
+                      {ev.status === "RSVP"
+                        ? "RSVP’d"
+                        : ev.status === "WAITLIST"
+                        ? "Waitlisted"
+                        : "Interested"}
+                    </div>
                     <div className="text-sm text-white">
                         Date: {formatDate(ev.event_date)} 
                     </div>

@@ -11,7 +11,7 @@ export async function GET() {
             `SELECT id, event_name, event_date, location, capacity, rsvp_count
              FROM events
              WHERE capacity IS NULL
-                OR rsvp_count < capacity`
+                OR rsvp_count <= capacity`
         );
 
         // If no events match the condition, return empty list

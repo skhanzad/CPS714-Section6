@@ -42,7 +42,7 @@ export default function EventsSection({ events }: EventsSectionProps) {
   return (
     <div className="bg-white rounded-2xl shadow p-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-lg font-semibold">Events</h2>
+        <h2 className="text-lg font-semibold">My Events</h2>
 
         <div className="flex items-center gap-3 text-sm">
           <span className="text-gray-500 mr-1">Sort by</span>

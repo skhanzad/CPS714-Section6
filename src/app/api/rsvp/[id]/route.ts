@@ -34,7 +34,7 @@ export async function POST(req: Request, context: any) {
         }
 
         else if (rsvp_count >= capacity){ // here we know that its a limited event and if the rsvp_count is greater than or equal to capacity, we cannot add another, so throw an error saying its full
-            status = "WAITLISTED";
+            status = "WAITLIST";
         }
 
 
@@ -147,11 +147,43 @@ export async function DELETE(req: Request, context: any) {
                  WHERE id = $1 AND rsvp_count > 0`,
                 [eventId]
             );
+
+        const waitlist = await db.query(
+        `
+        SELECT user_id 
+        FROM rsvps
+        WHERE event_id = $1 AND status = 'WAITLIST'
+        ORDER BY created_at ASC
+        LIMIT 1
+        `,
+        [eventId]
+    );
+      if ((waitlist.rowCount ?? 0) > 0) { // if its a imited capacity event, and someone is waitlisted, add, the first person in the waitlist
+                
+        const nextUser = waitlist.rows[0].user_id;
+        await db.query(
+            `
+            UPDATE rsvps
+            SET status = 'RSVP'
+            WHERE user_id = $1 AND event_id = $2
+            `,
+            [nextUser, eventId]
+        );
+        await db.query(
+            `
+            UPDATE events
+            SET rsvp_count = rsvp_count + 1
+            WHERE id = $1
+            `,
+            [eventId]
+        );
         }
+    } 
+            return NextResponse.json({ ok: true, status: "CANCELLED" });
 
-        return NextResponse.json({ ok: true, status: "CANCELLED" });
-
-    } catch (err) {
+}
+    
+    catch (err) {
         console.error(err);
         return NextResponse.json(
             { error: "Something went wrong" },

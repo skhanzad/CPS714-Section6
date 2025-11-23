@@ -2,6 +2,7 @@
 import Link from "next/link";
 
 export default function Home() {
+  
   return (
     <div className="card text-center">
       <h1 className="text-3xl font-bold text-[#1E90FF] mb-3">CampusConnect</h1>

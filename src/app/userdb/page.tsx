@@ -1,95 +1,70 @@
+"use client"; // ← must be first line
+
 import DashboardLayout from "./dashboardlayout";
 import PointsCard from "./components/PointsCard";
 import EventsSection from "./components/EventsSection";
 import RecommendedEventsSection from "./components/ReccomendedEventsSection";
+import RecommendedEventsContainer from "./components/RecommendedEventsContainer";
+import { useEffect, useState } from "react";
+
+export type UserItem = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  student_id: string;
+  password: string;
+  permission_level: number;
+  attended_events: string[];
+  interested_events: string[];
+  points: number;
+};
 
 export type EventItem = {
   id: string;
-  name: string;
+  names: string;
   org: string;
-  dateLabel: string;
-  dateExact: string;
-  location: string;
-  status: "RSVP" | "Pending" | "Done";
+  dateexact: string;
+  locations: string;
+  currstatus: string;
 };
 
-export default async function DashboardPage() {
-  const userName = "Dylan Ha";
+export default function DashboardPage() {
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [currentUser, setCurrentUser] = useState<UserItem | null>(null);
 
-  // TODO: integrate backend , just have dummy values for now 
-  const events: EventItem[] = [
-    {
-      id: "1",
-      name: "Hackathon",
-      org: "TMU CSCU",
-      dateLabel: "In 2 Days",
-      dateExact: "2025/10/11",
-      location: "KHW-12",
-      status: "RSVP",
-    },
-    {
-      id: "2",
-      name: "Homecoming",
-      org: "TMU SLC",
-      dateLabel: "Today • 5h ago",
-      dateExact: "2025/10/09",
-      location: "MAC",
-      status: "RSVP",
-    },
-    {
-      id: "3",
-      name: "Tutoring",
-      org: "MUESS",
-      dateLabel: "Today • 1h ago",
-      dateExact: "2025/10/09",
-      location: "ENG203",
-      status: "RSVP",
-    },
-    {
-      id: "4",
-      name: "Dodgeball",
-      org: "TMU Athletics",
-      dateLabel: "In 5 Days",
-      dateExact: "2025/10/14",
-      location: "KHW-LG",
-      status: "Pending",
-    },
-    {
-      id: "5",
-      name: "Bug Push",
-      org: "MUESS",
-      dateLabel: "Yesterday • 6:00 PM",
-      dateExact: "2025/10/08",
-      location: "KHW",
-      status: "Done",
-    },
-    {
-      id: "6",
-      name: "Resume Roast",
-      org: "TMU CSCU",
-      dateLabel: "Yesterday • 8:00 PM",
-      dateExact: "2025/10/08",
-      location: "DCC-208",
-      status: "Done",
-    },
-  ];
+  useEffect(() => {
+    fetch("/api/events")
+      .then((res) => res.json())
+      .then((data) => setEvents(data))
+      .catch((err) => console.error("Failed to fetch events:", err));
+  }, []);
 
-  const recommended = events.slice(0, 0); // TODO: integrate backend recommendation logic
+  useEffect(() => {
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then((data: UserItem[]) => {
+        setUsers(data);
+        // Filter for Jimmy Fang
+        const jimmy = data.find(u => u.first_name === "Jimmy" && u.last_name === "Fang") || null;
+        setCurrentUser(jimmy);
+      })
+      .catch((err) => console.error("Failed to fetch users:", err));
+  }, []);
+
 
   return (
-    <DashboardLayout userName={userName} activeRoute="dashboard">
+    <DashboardLayout userName={`${currentUser?.first_name} ${currentUser?.last_name}`} activeRoute="dashboard">
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* points + recommended */}
         <div className="space-y-8">
           <PointsCard
-            totalPoints={5000}
-            cardLastDigits="501056670"
-            // TODO: integrate backend – points from Rewards system
+            totalPoints={currentUser?.points ?? 0}
+            cardLastDigits={currentUser?.student_id.slice(-4) ?? "0000"}
           />
-          <RecommendedEventsSection events={recommended} />
+          <RecommendedEventsContainer events={events} currentUser = {currentUser}/>
         </div>
 
-        {/* events */}
         <div className="xl:col-span-2">
           <EventsSection events={events} />
         </div>

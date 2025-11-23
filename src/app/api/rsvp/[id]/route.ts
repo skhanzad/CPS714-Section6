@@ -30,7 +30,7 @@ export async function POST(req: Request, context: any) {
         let status = "RSVP";
         if (capacity === null) // the assignemnt said the event could have capacity or not, if it doesnt, mark it as interested
         {
-            status = "INTERESTED" // going to try and keep this constant sstring as capital
+            status = "INTERESTED" // going to try and keep this constant string as capital
         }
 
         else if (rsvp_count >= capacity){ // here we know that its a limited event and if the rsvp_count is greater than or equal to capacity, we cannot add another, so throw an error saying its full
@@ -94,6 +94,63 @@ export async function GET(req: Request, context: any) {
         );
 
         return NextResponse.json({ events: result.rows });
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json(
+            { error: "Something went wrong" },
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(req: Request, context: any) {
+
+    try {
+
+        const params = await context.params;
+        const eventId = params.id;
+
+        const body = await req.json();
+        const userId = body.userId; // the user who is making the request
+
+        const db = await getDb(); // connect to db
+
+        // check if the user has RSVP'd for this event
+        const existing = await db.query(
+            `SELECT status 
+             FROM rsvps 
+             WHERE user_id = $1 AND event_id = $2`,
+            [userId, eventId]
+        );
+
+        if (existing.rowCount === 0) { 
+            return NextResponse.json(
+                { error: "You have not RSVP’d for this event" },
+                { status: 400 }
+            );
+        }
+
+        const currentStatus = existing.rows[0].status;
+
+        // delete the rsvp entry
+        await db.query(
+            `DELETE FROM rsvps 
+             WHERE user_id = $1 AND event_id = $2`,
+            [userId, eventId]
+        );
+
+        // if the user had RSVP'd, decrement rsvp_count (only for events with limited capacity)
+        if (currentStatus === "RSVP") {
+            await db.query(
+                `UPDATE events 
+                 SET rsvp_count = rsvp_count - 1 
+                 WHERE id = $1 AND rsvp_count > 0`,
+                [eventId]
+            );
+        }
+
+        return NextResponse.json({ ok: true, status: "CANCELLED" });
+
     } catch (err) {
         console.error(err);
         return NextResponse.json(

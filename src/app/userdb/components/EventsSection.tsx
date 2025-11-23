@@ -16,8 +16,8 @@ export default function EventsSection({ events }: EventsSectionProps) {
 
   const sortedEvents = useMemo(() => {
     return [...events].sort((a, b) => {
-      const dateA = new Date(a.dateExact).getTime();
-      const dateB = new Date(b.dateExact).getTime();
+      const dateA = new Date(a.dateexact).getTime();
+      const dateB = new Date(b.dateexact).getTime();
 
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
@@ -73,22 +73,22 @@ export default function EventsSection({ events }: EventsSectionProps) {
             {visibleEvents.map((ev) => (
               <tr key={ev.id} className="border-b last:border-0 hover:bg-gray-50 transition">
                 <td className="py-3">
-                  <div className="font-medium">{ev.name}</div>
+                  <div className="font-medium">{ev.names}</div>
                   <div className="text-xs text-gray-500">{ev.org}</div>
                 </td>
                 <td>
-                  <div>{ev.dateLabel}</div>
-                  <div className="text-xs text-gray-500">{ev.dateExact}</div>
+                  <div>{ev.dateexact}</div>
+                  <div className="text-xs text-gray-500">{ev.dateexact}</div>
                 </td>
-                <td>{ev.location}</td>
+                <td>{ev.locations}</td>
                 <td className="text-right pr-2">
-                  {ev.status === "RSVP" && (
+                  {ev.currstatus === "RSVP" && (
                     <button className="text-blue-600 font-medium text-xs">RSVP</button>
                   )}
-                  {ev.status === "Pending" && (
-                    <span className="text-yellow-500 text-xs font-medium">Pending</span>
+                  {ev.currstatus === "upcoming" && (
+                    <span className="text-yellow-500 text-xs font-medium">upcoming</span>
                   )}
-                  {ev.status === "Done" && (
+                  {ev.currstatus === "done" && (
                     <span className="text-green-600 text-xs font-medium">Done</span>
                   )}
                 </td>

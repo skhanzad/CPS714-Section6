@@ -142,3 +142,7 @@ vite.config.ts.timestamp-*
 
 # DOcker Volumes
 .postgressendgrid.env
+/.postgres/
+.DS_Store
+/.postgres/
+.DS_Store

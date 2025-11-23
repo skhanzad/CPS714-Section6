@@ -14,11 +14,11 @@ export default function RecommendedEventsSection({
       <div className="space-y-4">
         {events.map((ev) => (
           <div key={ev.id} className="pb-3 border-b last:border-0 last:pb-0">
-            <div className="font-medium">{ev.name}</div>
+            <div className="font-medium">{ev.names}</div>
             <div className="text-xs text-gray-500">{ev.org}</div>
             <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>{ev.dateLabel}</span>
-              <span>{ev.location}</span>
+              <span>{ev.dateexact}</span>
+              <span>{ev.locations}</span>
             </div>
           </div>
         ))}

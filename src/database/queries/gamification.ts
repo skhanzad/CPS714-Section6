@@ -206,3 +206,27 @@ export const listLeaderboardByN = async (N: number) => {
 
   return leaderboard;
 };
+
+/**
+ * List credit transactions for a given user ID (ordered newest first).
+ * Joins profiles to ensure the records belong to the user.
+ */
+export const listCreditTransactionsForUser = async (userId: string) => {
+  const transactions = await db
+    .select({
+      id: creditTransactionsTable.id,
+      profileId: creditTransactionsTable.profileId,
+      eventId: creditTransactionsTable.eventId,
+      amount: creditTransactionsTable.amount,
+      receivedAt: creditTransactionsTable.receivedAt,
+    })
+    .from(creditTransactionsTable)
+    .leftJoin(
+      rewardsProfilesTable,
+      eq(creditTransactionsTable.profileId, rewardsProfilesTable.id)
+    )
+    .where(eq(rewardsProfilesTable.userId, userId))
+    .orderBy(sql`${creditTransactionsTable.receivedAt} DESC`);
+
+  return transactions;
+};

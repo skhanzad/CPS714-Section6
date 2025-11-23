@@ -9,7 +9,7 @@
 }
 
 body {
-  @apply min-h-screen flex items-center justify-center font-sans antialiased;
+  @apply min-h-screen font-sans antialiased;
   color: var(--foreground);
   background-color: var(--background);
   background-image: radial-gradient(1200px 800px at 50% -10%, #0f172a 0%, rgba(0,0,0,0) 60%);

@@ -53,7 +53,6 @@ export default function DashboardPage() {
       .catch((err) => console.error("Failed to fetch users:", err));
   }, []);
 
-  const recommended = events.slice(0, 0); // TODO: integrate backend recommendation logic
 
   return (
     <DashboardLayout userName={`${currentUser?.first_name} ${currentUser?.last_name}`} activeRoute="dashboard">

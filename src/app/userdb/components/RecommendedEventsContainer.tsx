@@ -20,7 +20,7 @@ export default function RecommendedEventsContainer({ events, currentUser }: { ev
   useEffect(() => {
       const recs = getRecommendedEvents(events, currentUser); //get list of recommended events
       setRecommended(recs); //pass into react state
-  }, [events]);
+  }, [events, currentUser]);
 
   return <RecommendedEventsSection events={recommended} />; 
 }

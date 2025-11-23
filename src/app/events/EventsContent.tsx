@@ -23,6 +23,7 @@ interface EventsContentProps {
 
 export default function EventsContent({ userId }: EventsContentProps) {
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [rsvpedEvents, setRsvpedEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<Record<number, boolean>>({});
@@ -50,6 +51,26 @@ export default function EventsContent({ userId }: EventsContentProps) {
     }
     loadEvents();
   }, []);
+  
+  // Fetch events that the user has RSVP'd/marked interested 
+  useEffect(() => {
+    async function loadRsvpedEvents() {
+      if (!userId) {
+        setRsvpedEvents([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/rsvp/${userId}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+        const data = await res.json();
+        setRsvpedEvents(data.events || []);
+      } catch (e: any) {
+        console.error("Failed to load RSVP'd events:", e);
+        setRsvpedEvents([]);
+      }
+    }
+    loadRsvpedEvents();
+  }, [userId]);
   
   // This is to format the date properly
   function formatDate(dateStr: string | null) {
@@ -90,6 +111,11 @@ export default function EventsContent({ userId }: EventsContentProps) {
           await fetch("/api/events/available", { cache: "no-store" })
         ).json();
         setEvents(updated.events || []);
+        // Refresh RSVP'd events
+        const rsvpData = await (
+          await fetch(`/api/rsvp/${userId}`, { cache: "no-store" })
+        ).json();
+        setRsvpedEvents(rsvpData.events || []);
         const statusMsg =
           data.status === "WAITLISTED" ?
              "Event is full — you have been added to the waitlist."
@@ -105,18 +131,91 @@ export default function EventsContent({ userId }: EventsContentProps) {
     }
   }
 
+  // Handle when user clicks Cancel 
+  async function handleCancelRsvp(eventId: number) {
+    if (!userId) {
+      showModal("Please login", "error");
+      return;
+    }
+    setSubmitting((s) => ({ ...s, [eventId]: true }));
+    try {
+      const res = await fetch(`/api/rsvp/${eventId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showModal(data.error || "Failed to cancel", "error");
+      } else {
+        // Refresh available events
+        const updated = await (
+          await fetch("/api/events/available", { cache: "no-store" })
+        ).json();
+        setEvents(updated.events || []);
+        // Refresh RSVP'd events
+        const rsvpData = await (
+          await fetch(`/api/rsvp/${userId}`, { cache: "no-store" })
+        ).json();
+        setRsvpedEvents(rsvpData.events || []);
+        showModal("Successfully cancelled RSVP/Interest", "success");
+      }
+    } catch (e: any) {
+      showModal(e.message || "Error cancelling RSVP", "error");
+    } finally {
+      setSubmitting((s) => ({ ...s, [eventId]: false }));
+    }
+  }
+
   // Loading screen
   if (loading) return <div className="p-6">Loading events...</div>;
-
   return (
     <main className="min-h-screen bg-black text-white">
       <div className="max-w-3xl mx-auto py-8">
-        <h1 className="text-2xl font-bold text-center text-blue-500">Events</h1>
+        <h1 className="text-2xl font-bold text-center text-blue-500 mb-4">Events</h1>
 
         {error && <div className="p-6 text-red-600">Error: {error}</div>}
 
-        {/* If there are no events currently */}
+        {/* My Events section (only shows if user has RSVP'd/Interested events) */}
+        {userId && rsvpedEvents.length > 0 && (
+          <div className="p-6 space-y-4">
+            <h2 className="text-xl font-bold text-green-500">My Events</h2>
+              {rsvpedEvents.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="border rounded p-4 flex justify-between items-center"
+                >
+                  <div>
+                    <div className="text-lg font-semibold">{ev.event_name}</div>
+                    <div className="text-sm text-white">
+                        Date: {formatDate(ev.event_date)} 
+                    </div>
+                    <div className="text-sm text-white">
+                        Location: {ev.location ?? "TBA"}
+                    </div>
+                    <div className="text-sm text-white">
+                      {ev.capacity === null
+                        ? "Unlimited capacity"
+                        : `Capacity: ${ev.capacity} (${ev.rsvp_count ?? 0}/${ev.capacity} filled)`}
+                    </div>
+                  </div>
+                  {/* CAncel button */}
+                  <button
+                    className="bg-red-500 text-white px-3 py-1 rounded disabled:opacity-60"
+                    onClick={() => handleCancelRsvp(ev.id)}
+                    disabled={submitting[ev.id]}
+                  >
+                    {submitting[ev.id] ? "Cancelling..." : "Cancel"}
+                  </button>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* Available events section */}
         <div className="p-6 space-y-4">
+          <h2 className="text-xl font-bold text-blue-400">Available Events</h2>
+          {/* If there are no events currently */}
           {events.length === 0 && (
             <div>No events currently.</div>
           )}
@@ -155,7 +254,7 @@ export default function EventsContent({ userId }: EventsContentProps) {
         </div>
       </div>
 
-      {/* Confirmation modal to show successful RSVP or if the user is already RSVP'd */}
+      {/* Confirmation modal */}
       {modal.visible && (
         <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-lg">

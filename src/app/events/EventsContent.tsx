@@ -91,7 +91,9 @@ export default function EventsContent({ userId }: EventsContentProps) {
         ).json();
         setEvents(updated.events || []);
         const statusMsg =
-          data.status === "INTERESTED"
+          data.status === "WAITLISTED" ?
+             "Event is full — you have been added to the waitlist."
+                : data.status === "INTERESTED"
             ? "Marked as interested in this event!"
             : "Successfully RSVP'd for this event!";
         showModal(statusMsg, "success");

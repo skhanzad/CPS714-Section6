@@ -21,7 +21,7 @@ const formatPoints = (value: unknown) => {
   return Number.isFinite(points) ? `${points} pts` : null;
 };
 
-export default async function RewardsPage() {
+export default async function MyRewardsPage() {
   const user = await getCurrentUser();
 
   if (!user) {

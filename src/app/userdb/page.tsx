@@ -46,9 +46,10 @@ export default function DashboardPage() {
       .then((res) => res.json())
       .then((data: UserItem[]) => {
         setUsers(data);
-        // Filter for Jimmy Fang
+        // Filter for Specific names
         const jimmy = data.find(u => u.first_name === "Jimmy" && u.last_name === "Fang") || null;
-        setCurrentUser(jimmy);
+        const dylan = data.find(u => u.first_name === "Dylan" && u.last_name === "Ha") || null;
+        setCurrentUser(jimmy); // change if you want to change the user here 
       })
       .catch((err) => console.error("Failed to fetch users:", err));
   }, []);

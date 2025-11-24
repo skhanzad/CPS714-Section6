@@ -53,12 +53,6 @@ A users points profile can be display to the user using the following component.
 
 **Side Effect**: When clicked the user will be redirect to the rewards page.
 
-## Internal
+## Internal Specifications
 
-Internal documentation of gamification (domain specific) APIs
-
-## Server Operations
-
-## Client Components & Functionality
-
-## Pages
+Internal domain specifications created by the gamification team can be found [here](./6_USER_GUIDE.md)

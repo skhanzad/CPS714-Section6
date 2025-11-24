@@ -20,20 +20,20 @@ export default function HistoryPage() {
     fetch("/api/users")
       .then((res) => res.json())
       .then((users: UserItem[]) => {
-        const jimmy = users.find(
-          (u) => u.first_name === "Jimmy" && u.last_name === "Fang"
+        const currentusr = users.find(
+          (u) => u.first_name === "Jimmy" && u.last_name === "Fang" // change to dylan ha if you want to switch users to view history 
         );
-        if (jimmy) {
-          setCurrentUser(jimmy);
+        if (currentusr) {
+          setCurrentUser(currentusr);  
 
           // fetch all events
           fetch("/api/events")
             .then((res) => res.json())
             .then((events: EventItem[]) => {
               
-              // filter events that Jimmy attended
+              // filter events that user attended
               const attended = events.filter((ev) =>
-                jimmy.attended_events.includes(ev.id)
+                currentusr.attended_events.includes(ev.id)
               );
               setEvents(attended);
             });

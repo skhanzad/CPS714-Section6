@@ -181,9 +181,14 @@ export default function RewardsCatalogClient({
       });
       const data = await res.json();
       if (!res.ok || !data?.ok) {
+        const errorText =
+          data?.error ||
+          (res.status === 400
+            ? "Invalid reward details. Please check required fields, costs, and quantity."
+            : "Unable to create reward right now.");
         setMessage({
           type: "error",
-          text: data?.error || "Unable to create reward right now.",
+          text: errorText,
         });
         return;
       }
@@ -254,28 +259,6 @@ export default function RewardsCatalogClient({
             students.
           </p>
         </header>
-
-        {message ? (
-          <div
-            className={`rounded-xl border px-4 py-3 text-sm ${
-              message.type === "success"
-                ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-100"
-                : "border-red-400/50 bg-red-500/10 text-red-100"
-            }`}
-          >
-            <div className="flex flex-col gap-2">
-              <span>{message.text}</span>
-              {message.type === "success" ? (
-                <a
-                  href="/my-rewards"
-                  className="inline-flex w-fit text-xs text-emerald-100 underline underline-offset-4 hover:text-emerald-50"
-                >
-                  Go to My Rewards
-                </a>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
 
         {hasProfile ? (
           <section className="bg-white/5 border border-white/10 rounded-2xl shadow-2xl p-6 backdrop-blur">
@@ -348,6 +331,28 @@ export default function RewardsCatalogClient({
             </a>
           </section>
         )}
+
+        {message ? (
+          <div
+            className={`rounded-xl border px-4 py-3 text-sm ${
+              message.type === "success"
+                ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-100"
+                : "border-red-400/50 bg-red-500/10 text-red-100"
+            }`}
+          >
+            <div className="flex flex-col gap-2">
+              <span>{message.text}</span>
+              {message.type === "success" ? (
+                <a
+                  href="/my-rewards"
+                  className="inline-flex w-fit text-xs text-emerald-100 underline underline-offset-4 hover:text-emerald-50"
+                >
+                  Go to My Rewards
+                </a>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         <section className="bg-white/5 border border-white/10 rounded-2xl shadow-2xl p-6 backdrop-blur">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">

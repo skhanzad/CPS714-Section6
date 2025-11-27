@@ -186,12 +186,22 @@ def get_database_connection() -> psycopg2.extensions.connection:
         raise DataLoadError(f"{ERROR_MESSAGES['database_connection']} Unexpected error: {str(e)}")
 
 
+def get_database_uri() -> str:
+    """
+    Create a PostgreSQL connection URI string for pandas.
+    
+    Returns:
+        Connection URI string
+    """
+    return f"postgresql://{DATABASE_CONFIG['user']}:{DATABASE_CONFIG['password']}@{DATABASE_CONFIG['host']}:{DATABASE_CONFIG['port']}/{DATABASE_CONFIG['database']}"
+
+
 def load_events_from_database(connection: psycopg2.extensions.connection) -> pd.DataFrame:
     """
     Load events data from PostgreSQL database.
     
     Args:
-        connection: Database connection object
+        connection: Database connection object (unused, kept for compatibility)
     
     Returns:
         DataFrame containing events data
@@ -200,7 +210,9 @@ def load_events_from_database(connection: psycopg2.extensions.connection) -> pd.
         DataLoadError: If query fails or data is invalid
     """
     try:
-        events_df = pd.read_sql(EVENTS_QUERY, connection)
+        # Use connection URI for pandas compatibility
+        database_uri = get_database_uri()
+        events_df = pd.read_sql(EVENTS_QUERY, database_uri)
         validate_dataframe(events_df, ["event_name", "rsvp_count", "actual_attendance"], "Events")
         logger.info(f"Successfully loaded {len(events_df)} events from database.")
         return events_df
@@ -213,7 +225,7 @@ def load_feedback_from_database(connection: psycopg2.extensions.connection) -> p
     Load feedback data from PostgreSQL database.
     
     Args:
-        connection: Database connection object
+        connection: Database connection object (unused, kept for compatibility)
     
     Returns:
         DataFrame containing feedback data, or empty DataFrame if table/view doesn't exist
@@ -222,7 +234,9 @@ def load_feedback_from_database(connection: psycopg2.extensions.connection) -> p
         DataLoadError: If query fails (except for missing table/view)
     """
     try:
-        feedback_df = pd.read_sql(FEEDBACK_QUERY, connection)
+        # Use connection URI for pandas compatibility
+        database_uri = get_database_uri()
+        feedback_df = pd.read_sql(FEEDBACK_QUERY, database_uri)
         validate_dataframe(feedback_df, ["event_name", "avg_rating", "feedback_count"], "Feedback")
         logger.info(f"Successfully loaded {len(feedback_df)} feedback records from database.")
         return feedback_df
@@ -243,7 +257,7 @@ def load_audience_from_database(connection: psycopg2.extensions.connection) -> p
     Load audience data from PostgreSQL database.
     
     Args:
-        connection: Database connection object
+        connection: Database connection object (unused, kept for compatibility)
     
     Returns:
         DataFrame containing audience data, or empty DataFrame if table/view doesn't exist
@@ -252,7 +266,9 @@ def load_audience_from_database(connection: psycopg2.extensions.connection) -> p
         DataLoadError: If query fails (except for missing table/view)
     """
     try:
-        audience_df = pd.read_sql(AUDIENCE_QUERY, connection)
+        # Use connection URI for pandas compatibility
+        database_uri = get_database_uri()
+        audience_df = pd.read_sql(AUDIENCE_QUERY, database_uri)
         validate_dataframe(audience_df, ["college", "major", "students"], "Audience")
         logger.info(f"Successfully loaded {len(audience_df)} audience records from database.")
         return audience_df

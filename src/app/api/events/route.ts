@@ -8,8 +8,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ events: res.rows });
   } catch (err) {
     console.error("events route error:", err);
+    const errorMessage = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "internal server error", message: String((err as any).message ?? err) },
+      { 
+        error: "internal server error", 
+        message: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(err) : undefined
+      },
       { status: 500 }
     );
   }

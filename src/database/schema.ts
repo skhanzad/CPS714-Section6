@@ -1,4 +1,37 @@
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import "dotenv/config";
+import { Client } from "pg";
+
+const clientConfig = {
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : undefined,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  database: process.env.POSTGRES_DATABASE,
+};
+
+let client: Client;
+//Connects to postgres using node-postgres
+export default async function getDb(): Promise<Client> {
+    if (!client) {
+        console.log("Database config:", {
+          host: clientConfig.host,
+          port: clientConfig.port,
+          user: clientConfig.user,
+          database: clientConfig.database,
+          password: clientConfig.password ? "***" : undefined,
+        });
+        client = new Client(clientConfig);
+        try {
+          await client.connect();
+          console.log("Database connected");
+        } catch (err) {
+          console.error("Database connection error:", err);
+          throw err;
+        }
+    }
+    return client;
+}
 
 export const usersTable = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),

@@ -59,3 +59,24 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cps714_app
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "${POSTGRES_USER:-root}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-admin}"
+      POSTGRES_DATABASE: "${POSTGRES_DB:-campus_connect_db}"
+    volumes:
+      - ./app:/app
+    command: ["npm", "start"]
